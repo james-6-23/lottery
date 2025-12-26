@@ -5,3 +5,5 @@ backend/server.exe
 
 .vscode/settings.json
 ex.html
+.claude/settings.local.json
+LOTTERY_DESIGNER_ANALYSIS.md

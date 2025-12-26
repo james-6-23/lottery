@@ -161,10 +161,21 @@ export function AdminLotteryDesigner() {
         {/* 右侧预览区 */}
         <div className="designer-preview">
           <div className={`preview-container ${previewDevice}`}>
-            <div className="preview-header">
-              <span className="preview-label">实时预览</span>
+            <div className="preview-header flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                {previewDevice === 'desktop' && (
+                  <div className="flex gap-1.5">
+                    <div className="w-3 h-3 rounded-full bg-[#ff5f56] border border-[#e0443e]" />
+                    <div className="w-3 h-3 rounded-full bg-[#ffbd2e] border border-[#dea123]" />
+                    <div className="w-3 h-3 rounded-full bg-[#27c93f] border border-[#1aab29]" />
+                  </div>
+                )}
+                <span className="preview-label text-sm font-semibold text-white/70">
+                  {previewDevice === 'desktop' ? '桌面端预览' : '移动端预览'}
+                </span>
+              </div>
               {previewDevice === 'mobile' && (
-                <span className="device-label flex items-center gap-1"><Smartphone className="w-3 h-3" /> 移动端视图</span>
+                <Smartphone className="w-4 h-4 text-white/40" />
               )}
             </div>
             <div className="preview-content">
@@ -298,104 +309,153 @@ export function AdminLotteryDesigner() {
           transition: all 0.3s;
         }
 
+        @media (max-width: 1200px) {
+          .designer-content {
+            grid-template-columns: 320px 1fr;
+          }
+        }
+
+        @media (max-width: 1024px) {
+          .designer-content {
+            grid-template-columns: 1fr;
+          }
+          
+          .designer-sidebar {
+            height: auto;
+            max-height: none;
+            overflow: visible;
+          }
+
+          .designer-preview {
+            padding: 0;
+          }
+        }
+
+        .preview-container {
+          transition: all 0.3s ease;
+        }
+
+        /* Desktop Preview Styles */
+        .preview-container.desktop {
+          width: 100%;
+          min-height: 600px;
+          background: rgba(30, 30, 46, 0.5); /* Semi-transparent dark bg */
+          backdrop-filter: blur(20px);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          border-radius: 12px;
+          box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+          display: flex;
+          flex-direction: column;
+        }
+
+        .preview-container.desktop .preview-header {
+          padding: 16px 20px;
+          background: rgba(255, 255, 255, 0.03);
+          border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .preview-container.desktop .preview-content {
+          flex: 1;
+          background-image: 
+            linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+          background-size: 20px 20px;
+          padding: 40px;
+          overflow: auto;
+          display: flex;
+          align-items: center; /* Center vertically */
+          justify-content: center; /* Center horizontally */
+        }
+
+        /* Mobile Preview Styles */
         .preview-container.mobile {
-          max-width: 400px;
-          border-radius: 32px;
-          border: 8px solid #333;
-          background: #1a1a1a;
+          width: 375px;
+          height: 812px; /* iPhone X height */
+          max-height: 85vh;
+          border-radius: 40px;
+          border: 12px solid #2a2a2a;
+          background: #000;
           position: relative;
+          box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+          display: flex;
+          flex-direction: column;
+          overflow: hidden; /* Clip content to rounded corners */
         }
 
         .preview-container.mobile::before {
           content: '';
           position: absolute;
-          top: 8px;
+          top: 0;
           left: 50%;
           transform: translateX(-50%);
-          width: 80px;
-          height: 6px;
-          background: #333;
-          border-radius: 3px;
+          width: 150px;
+          height: 30px;
+          background: #2a2a2a;
+          border-bottom-left-radius: 16px;
+          border-bottom-right-radius: 16px;
+          z-index: 20;
         }
 
-        .preview-header {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          margin-bottom: 16px;
-          padding-bottom: 12px;
+        .preview-container.mobile .preview-header {
+          padding: 40px 20px 10px; /* Space for notch */
+          background: transparent;
           border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+          z-index: 10;
         }
 
-        .preview-label {
-          font-size: 14px;
-          font-weight: 600;
-          color: rgba(255, 255, 255, 0.7);
+        .preview-container.mobile .preview-content {
+          flex: 1;
+          overflow-y: auto;
+          padding: 20px;
+          background: #121212; /* Simulate mobile dark mode bg */
+          -ms-overflow-style: none; /* Hide scrollbar IE/Edge */
+          scrollbar-width: none; /* Hide scrollbar Firefox */
+        }
+        
+        .preview-container.mobile .preview-content::-webkit-scrollbar {
+          display: none; /* Hide scrollbar Chrome/Safari */
         }
 
-        .device-label {
-          font-size: 12px;
-          color: rgba(255, 255, 255, 0.4);
-        }
-
-        .preview-content {
-          display: flex;
-          justify-content: center;
-          padding: 20px 0;
-        }
-
-        .preview-info {
+        .preview-container.mobile .preview-info {
+          background: rgba(30, 30, 30, 0.9);
+          padding: 12px;
+          border-top: 1px solid rgba(255, 255, 255, 0.1);
           display: grid;
           grid-template-columns: repeat(4, 1fr);
-          gap: 12px;
-          margin-top: 16px;
-          padding-top: 16px;
-          border-top: 1px solid rgba(255, 255, 255, 0.1);
+          gap: 8px;
+        }
+
+        .preview-container.desktop .preview-info {
+           background: rgba(20, 20, 30, 0.4);
+           border-top: 1px solid rgba(255, 255, 255, 0.05);
+           padding: 12px 24px;
+           display: flex;
+           justify-content: flex-end; /* Align to right or space-between */
+           gap: 32px;
         }
 
         .info-item {
           text-align: center;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+        }
+
+        .preview-container.desktop .info-item {
+          flex-direction: row;
+          gap: 8px;
         }
 
         .info-label {
-          display: block;
           font-size: 11px;
           color: rgba(255, 255, 255, 0.4);
-          margin-bottom: 4px;
         }
 
         .info-value {
-          font-size: 14px;
+          font-size: 13px;
           font-weight: 600;
           color: #667eea;
-        }
-
-        @media (max-width: 1200px) {
-          .designer-content {
-            grid-template-columns: 1fr;
-          }
-
-          .designer-sidebar {
-            height: auto;
-            max-height: 500px;
-          }
-        }
-
-        @media (max-width: 768px) {
-          .designer-toolbar {
-            flex-direction: column;
-            gap: 16px;
-            align-items: flex-start;
-          }
-
-          .toolbar-right {
-            flex-wrap: wrap;
-            width: 100%;
-          }
-
-          .preview-info {
-            grid-template-columns: repeat(2, 1fr);
-          }
+          font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
         }
       `}</style>
     </div>
