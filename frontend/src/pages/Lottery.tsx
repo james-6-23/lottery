@@ -4,16 +4,20 @@ import {
   getLotteryTypes,
   getGameTypeLabel,
   getStatusLabel,
-  getStatusColor,
   formatPrice,
   formatPrize,
   type LotteryType,
   type GameType,
   type LotteryTypeListResponse,
 } from '../api/lottery';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Ticket, Trophy, Filter, Loader2, AlertCircle, ChevronLeft, ChevronRight, Ban } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 const GAME_TYPES: { value: GameType | ''; label: string }[] = [
-  { value: '', label: '全部类型' },
+  { value: '', label: '全部' },
   { value: 'number_match', label: '数字匹配' },
   { value: 'symbol_match', label: '符号匹配' },
   { value: 'amount_sum', label: '金额累加' },
@@ -98,7 +102,7 @@ export function Lottery() {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto mb-4" />
           <p className="text-muted-foreground">加载中...</p>
         </div>
       </div>
@@ -107,51 +111,62 @@ export function Lottery() {
 
   if (error) {
     return (
-      <div className="text-center py-12">
-        <p className="text-red-500 mb-4">{error}</p>
-        <button
+      <div className="flex flex-col items-center justify-center min-h-[400px] text-center space-y-4">
+        <div className="p-4 rounded-full bg-destructive/10 text-destructive">
+          <AlertCircle className="w-12 h-12" />
+        </div>
+        <div>
+          <h3 className="text-lg font-semibold">出错了</h3>
+          <p className="text-muted-foreground">{error}</p>
+        </div>
+        <Button
           onClick={() => fetchLotteryTypes(currentPage, filterGameType)}
-          className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90"
+          variant="default"
         >
           重试
-        </button>
+        </Button>
       </div>
     );
   }
 
   return (
-    <div className="max-w-6xl mx-auto">
+    <div className="space-y-8">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold">彩票大厅</h1>
-          <p className="text-muted-foreground mt-1">选择你喜欢的彩票类型，试试手气吧！</p>
+          <h1 className="text-3xl font-bold tracking-tight">彩票大厅</h1>
+          <p className="text-muted-foreground mt-1">选择你喜欢的彩票类型，赢取丰厚奖金！</p>
         </div>
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">筛选：</span>
-          <select
-            value={filterGameType}
-            onChange={(e) => handleFilterChange(e.target.value as GameType | '')}
-            className="px-3 py-2 border rounded-lg text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/20"
+      </div>
+
+      {/* Filters */}
+      <div className="flex flex-wrap items-center gap-2 pb-4 border-b">
+        <Filter className="w-4 h-4 text-muted-foreground mr-2" />
+        {GAME_TYPES.map((type) => (
+          <Button
+            key={type.value || 'all'}
+            variant={filterGameType === type.value ? "default" : "outline"}
+            size="sm"
+            onClick={() => handleFilterChange(type.value)}
+            className="rounded-full"
           >
-            {GAME_TYPES.map((type) => (
-              <option key={type.value} value={type.value}>
-                {type.label}
-              </option>
-            ))}
-          </select>
-        </div>
+            {type.label}
+          </Button>
+        ))}
       </div>
 
       {/* Lottery Grid */}
       {lotteryTypes.length === 0 ? (
-        <div className="text-center py-12 bg-card rounded-xl border">
-          <p className="text-4xl mb-4">🎫</p>
-          <p className="text-muted-foreground">暂无可用的彩票类型</p>
+        <div className="flex flex-col items-center justify-center py-20 text-center border rounded-lg bg-muted/10 border-dashed">
+          <div className="p-4 bg-muted rounded-full mb-4">
+            <Ticket className="w-12 h-12 text-muted-foreground" />
+          </div>
+          <h3 className="text-xl font-medium">暂无彩票</h3>
+          <p className="text-muted-foreground">该分类下暂时没有可用的彩票类型。</p>
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {lotteryTypes.map((lottery) => (
               <LotteryCard
                 key={lottery.id}
@@ -164,26 +179,29 @@ export function Lottery() {
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="mt-8 flex items-center justify-between">
-              <p className="text-sm text-muted-foreground">
-                共 {total} 种彩票，第 {currentPage} / {totalPages} 页
-              </p>
-              <div className="flex items-center gap-2">
-                <button
+            <div className="flex flex-col items-center gap-2 mt-12">
+              <div className="flex items-center gap-6">
+                <Button
+                  variant="outline"
+                  size="icon"
                   onClick={() => handlePageChange(currentPage - 1)}
                   disabled={currentPage <= 1}
-                  className="px-4 py-2 border rounded-lg text-sm hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  上一页
-                </button>
-                <button
+                  <ChevronLeft className="w-4 h-4" />
+                </Button>
+                <span className="text-sm text-muted-foreground">
+                  {currentPage} / {totalPages}
+                </span>
+                <Button
+                  variant="outline"
+                  size="icon"
                   onClick={() => handlePageChange(currentPage + 1)}
                   disabled={currentPage >= totalPages}
-                  className="px-4 py-2 border rounded-lg text-sm hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  下一页
-                </button>
+                  <ChevronRight className="w-4 h-4" />
+                </Button>
               </div>
+              <p className="text-xs text-muted-foreground">共 {total} 个彩票</p>
             </div>
           )}
         </>
@@ -204,73 +222,91 @@ function LotteryCard({ lottery, emoji, onClick }: LotteryCardProps) {
   const isSoldOut = lottery.status === 'sold_out' || lottery.stock === 0;
 
   return (
-    <div
-      onClick={onClick}
-      className={`bg-card rounded-xl border shadow-sm overflow-hidden transition-all duration-200 ${
-        isAvailable
-          ? 'cursor-pointer hover:shadow-md hover:border-primary/50 hover:-translate-y-1'
-          : 'opacity-75 cursor-not-allowed'
-      }`}
+    <Card 
+      onClick={isAvailable ? onClick : undefined}
+      className={cn(
+        "group overflow-hidden transition-all duration-300 hover:shadow-lg",
+        isAvailable ? "cursor-pointer hover:-translate-y-1 hover:border-primary/50" : "opacity-80 cursor-not-allowed bg-muted/50"
+      )}
     >
       {/* Cover Image or Placeholder */}
-      <div className="relative h-32 bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center">
+      <div className="relative aspect-video bg-gradient-to-br from-primary/5 to-primary/10 flex items-center justify-center overflow-hidden">
         {lottery.cover_image ? (
           <img
             src={lottery.cover_image}
             alt={lottery.name}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
         ) : (
-          <span className="text-5xl">{emoji}</span>
+          <span className="text-6xl transition-transform duration-300 group-hover:scale-110 select-none">{emoji}</span>
         )}
         
         {/* Status Badge */}
-        <div className={`absolute top-2 right-2 px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColor(lottery.status)}`}>
-          {isSoldOut ? '已售罄' : getStatusLabel(lottery.status)}
+        <div className="absolute top-2 right-2">
+           {isSoldOut ? (
+             <Badge variant="destructive" className="uppercase">已售罄</Badge>
+           ) : lottery.status !== 'available' ? (
+             <Badge variant="secondary" className="uppercase">{getStatusLabel(lottery.status)}</Badge>
+           ) : (
+             <Badge variant="default" className="bg-green-600 hover:bg-green-700">热销中</Badge>
+           )}
         </div>
       </div>
 
-      {/* Content */}
-      <div className="p-4">
-        <h3 className="font-semibold text-lg mb-1 truncate">{lottery.name}</h3>
-        <p className="text-sm text-muted-foreground line-clamp-2 h-10 mb-3">
+      <CardHeader className="p-4 pb-2">
+        <div className="flex justify-between items-start gap-2">
+          <CardTitle className="text-lg line-clamp-1">{lottery.name}</CardTitle>
+        </div>
+        <CardDescription className="line-clamp-2 h-10 text-xs">
           {lottery.description}
-        </p>
+        </CardDescription>
+      </CardHeader>
 
-        {/* Info Row */}
-        <div className="flex items-center justify-between text-sm mb-3">
-          <span className="text-muted-foreground">
-            {getGameTypeLabel(lottery.game_type)}
-          </span>
-          <span className="text-muted-foreground">
-            库存: {lottery.stock > 0 ? lottery.stock : '无'}
-          </span>
-        </div>
+      <CardContent className="p-4 pt-2 space-y-3">
+         <div className="flex items-center justify-between text-sm">
+            <span className="text-muted-foreground flex items-center gap-1">
+              <Ticket className="w-3 h-3" />
+              {getGameTypeLabel(lottery.game_type)}
+            </span>
+            <span className={cn("text-xs px-2 py-0.5 rounded-full bg-secondary", lottery.stock < 100 && "text-destructive bg-destructive/10")}>
+              仅剩 {lottery.stock} 张
+            </span>
+         </div>
 
-        {/* Price and Max Prize */}
-        <div className="flex items-center justify-between">
-          <div>
-            <span className="text-xs text-muted-foreground">票价</span>
-            <p className="font-bold text-primary">{formatPrice(lottery.price)}</p>
-          </div>
-          <div className="text-right">
-            <span className="text-xs text-muted-foreground">最高奖金</span>
-            <p className="font-bold text-yellow-600">{formatPrize(lottery.max_prize)}</p>
-          </div>
-        </div>
+         <div className="grid grid-cols-2 gap-2 pt-2 border-t">
+            <div>
+              <p className="text-xs text-muted-foreground">票价</p>
+              <p className="font-bold text-lg text-primary">{formatPrice(lottery.price)}</p>
+            </div>
+            <div className="text-right">
+              <p className="text-xs text-muted-foreground">最高奖金</p>
+              <div className="flex items-center justify-end gap-1 font-bold text-lg text-yellow-600 dark:text-yellow-400">
+                <Trophy className="w-3 h-3" />
+                {formatPrize(lottery.max_prize)}
+              </div>
+            </div>
+         </div>
+      </CardContent>
 
-        {/* Buy Button */}
-        <button
+      <CardFooter className="p-4 pt-0">
+        <Button 
+          className="w-full" 
           disabled={!isAvailable}
-          className={`w-full mt-4 py-2 rounded-lg font-medium transition-colors ${
-            isAvailable
-              ? 'bg-primary text-primary-foreground hover:opacity-90'
-              : 'bg-muted text-muted-foreground cursor-not-allowed'
-          }`}
+          variant={isAvailable ? "default" : "secondary"}
         >
-          {isSoldOut ? '已售罄' : '立即购买'}
-        </button>
-      </div>
-    </div>
+          {isSoldOut ? (
+            <>
+              <Ban className="w-4 h-4 mr-2" /> 已售罄
+            </>
+          ) : !isAvailable ? (
+            getStatusLabel(lottery.status)
+          ) : (
+            <>
+              立即购买 <ChevronRight className="w-4 h-4 ml-1" />
+            </>
+          )}
+        </Button>
+      </CardFooter>
+    </Card>
   );
 }

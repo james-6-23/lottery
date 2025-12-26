@@ -24,7 +24,7 @@ services:
       - OAUTH_MODE=${OAUTH_MODE:-dev}
       - LINUXDO_CLIENT_ID=${LINUXDO_CLIENT_ID:-}
       - LINUXDO_SECRET=${LINUXDO_SECRET:-}
-      - LINUXDO_CALLBACK_URL=${LINUXDO_CALLBACK_URL:-http://localhost:5678/api/auth/oauth/callback}
+      - LINUXDO_CALLBACK_URL=${LINUXDO_CALLBACK_URL}
       # Cache (Redis)
       - CACHE_DRIVER=redis
       - REDIS_HOST=redis

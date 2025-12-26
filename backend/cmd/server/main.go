@@ -111,6 +111,9 @@ func main() {
 		})
 	})
 
+	// OAuth callback at root level (compatible with /oauth/callback format)
+	r.GET("/oauth/callback", oauthHandler.LinuxdoCallback)
+
 	// API routes
 	api := r.Group("/api")
 	{

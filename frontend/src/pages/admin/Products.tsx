@@ -12,6 +12,12 @@ import {
   type UpdateProductRequest,
   type CardKey,
 } from '../../api/admin';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Loader2, Plus, Edit, Trash2, Key, Upload, X, Package, ChevronLeft, ChevronRight, AlertTriangle } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 const STATUS_OPTIONS = [
   { value: 'available', label: '上架' },
@@ -184,16 +190,10 @@ export function AdminProducts() {
     return status;
   };
 
-  const getStatusColor = (status: string) => {
-    if (status === 'available') return 'bg-green-100 text-green-700';
-    if (status === 'sold_out') return 'bg-yellow-100 text-yellow-700';
-    return 'bg-gray-100 text-gray-700';
-  };
-
   if (loading && products.length === 0) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        <Loader2 className="h-12 w-12 animate-spin text-primary" />
       </div>
     );
   }
@@ -202,155 +202,157 @@ export function AdminProducts() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold">商品列表</h2>
-        <button
-          onClick={() => { resetForm(); setShowCreateModal(true); }}
-          className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90"
-        >
-          + 新建商品
-        </button>
+        <h2 className="text-xl font-bold tracking-tight">商品列表</h2>
+        <Button onClick={() => { resetForm(); setShowCreateModal(true); }}>
+          <Plus className="w-4 h-4 mr-2" /> 新建商品
+        </Button>
       </div>
 
       {error && (
-        <div className="p-4 bg-red-50 text-red-600 rounded-lg">{error}</div>
+        <div className="p-4 bg-destructive/10 text-destructive rounded-lg flex items-center gap-2">
+          <AlertTriangle className="w-5 h-5" />
+          {error}
+        </div>
       )}
 
       {/* Products Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {products.length === 0 ? (
-          <div className="col-span-full text-center py-12 text-muted-foreground">
-            暂无商品
+          <div className="col-span-full flex flex-col items-center justify-center py-12 text-muted-foreground border border-dashed rounded-lg bg-muted/10">
+            <Package className="w-12 h-12 mb-4 opacity-50" />
+            <p>暂无商品</p>
           </div>
         ) : (
           products.map((product) => (
-            <div key={product.id} className="bg-card rounded-xl border overflow-hidden">
-              <div className="aspect-video bg-muted flex items-center justify-center">
+            <Card key={product.id} className="overflow-hidden flex flex-col group">
+              <div className="aspect-video bg-muted flex items-center justify-center relative overflow-hidden">
                 {product.image ? (
-                  <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
+                  <img src={product.image} alt={product.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
                 ) : (
-                  <span className="text-4xl">🎁</span>
+                  <Package className="w-16 h-16 text-muted-foreground/30" />
                 )}
-              </div>
-              <div className="p-4">
-                <div className="flex items-start justify-between mb-2">
-                  <h3 className="font-semibold">{product.name}</h3>
-                  <span className={`text-xs px-2 py-1 rounded ${getStatusColor(product.status)}`}>
+                <div className="absolute top-2 right-2">
+                  <Badge variant={
+                    product.status === 'available' ? 'default' : 
+                    product.status === 'sold_out' ? 'destructive' : 
+                    'secondary'
+                  } className={cn(product.status === 'available' && 'bg-green-600')}>
                     {getStatusLabel(product.status)}
-                  </span>
+                  </Badge>
                 </div>
-                <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+              </div>
+              <CardContent className="p-4 flex-1">
+                <div className="mb-2">
+                  <h3 className="font-semibold text-lg line-clamp-1">{product.name}</h3>
+                </div>
+                <p className="text-sm text-muted-foreground mb-4 line-clamp-2 h-10">
                   {product.description || '暂无描述'}
                 </p>
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-lg font-bold text-primary">{product.price} 积分</span>
-                  <span className="text-sm text-muted-foreground">库存: {product.stock}</span>
+                <div className="flex items-center justify-between">
+                  <span className="text-xl font-bold text-primary">{product.price} <span className="text-xs font-normal text-muted-foreground">积分</span></span>
+                  <Badge variant="outline" className="font-normal text-muted-foreground">
+                    库存: {product.stock}
+                  </Badge>
                 </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => openEditModal(product)}
-                    className="flex-1 px-3 py-1.5 text-sm border rounded-lg hover:bg-muted"
-                  >
-                    编辑
-                  </button>
-                  <button
-                    onClick={() => handleViewKeys(product)}
-                    className="flex-1 px-3 py-1.5 text-sm border rounded-lg hover:bg-muted"
-                  >
-                    卡密
-                  </button>
-                  <button
-                    onClick={() => { setSelectedProduct(product); setShowDeleteModal(true); }}
-                    className="px-3 py-1.5 text-sm text-red-600 border border-red-200 rounded-lg hover:bg-red-50"
-                  >
-                    删除
-                  </button>
-                </div>
-              </div>
-            </div>
+              </CardContent>
+              <CardFooter className="p-4 pt-0 gap-2">
+                <Button variant="outline" size="sm" className="flex-1" onClick={() => openEditModal(product)}>
+                  <Edit className="w-4 h-4 mr-2" /> 编辑
+                </Button>
+                <Button variant="outline" size="sm" className="flex-1" onClick={() => handleViewKeys(product)}>
+                  <Key className="w-4 h-4 mr-2" /> 卡密
+                </Button>
+                <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive hover:bg-destructive/10" onClick={() => { setSelectedProduct(product); setShowDeleteModal(true); }}>
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </CardFooter>
+            </Card>
           ))
         )}
       </div>
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-center gap-2">
-          <button
+        <div className="flex items-center justify-center gap-4 pt-4">
+          <Button
+            variant="outline"
+            size="icon"
             onClick={() => fetchProducts(page - 1)}
             disabled={page <= 1}
-            className="px-4 py-2 border rounded-lg hover:bg-muted disabled:opacity-50"
           >
-            上一页
-          </button>
-          <span className="px-4 py-2 text-muted-foreground">{page} / {totalPages}</span>
-          <button
+            <ChevronLeft className="w-4 h-4" />
+          </Button>
+          <span className="text-sm text-muted-foreground">{page} / {totalPages}</span>
+          <Button
+            variant="outline"
+            size="icon"
             onClick={() => fetchProducts(page + 1)}
             disabled={page >= totalPages}
-            className="px-4 py-2 border rounded-lg hover:bg-muted disabled:opacity-50"
           >
-            下一页
-          </button>
+            <ChevronRight className="w-4 h-4" />
+          </Button>
         </div>
       )}
 
       {/* Create/Edit Modal */}
       {(showCreateModal || showEditModal) && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-card rounded-xl p-6 max-w-md w-full mx-4 shadow-xl">
-            <h2 className="text-xl font-bold mb-4">
-              {showCreateModal ? '新建商品' : '编辑商品'}
-            </h2>
-            
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-1">商品名称</label>
-                <input
-                  type="text"
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <Card className="w-full max-w-lg shadow-xl">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle>
+                {showCreateModal ? '新建商品' : '编辑商品'}
+              </CardTitle>
+              <Button variant="ghost" size="icon" onClick={() => { setShowCreateModal(false); setShowEditModal(false); resetForm(); }}>
+                <X className="w-4 h-4" />
+              </Button>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">商品名称</label>
+                <Input
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20"
                   placeholder="如：Steam 充值卡"
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium mb-1">描述</label>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">描述</label>
                 <textarea
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20"
-                  rows={3}
+                  className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                   placeholder="商品描述..."
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium mb-1">图片URL</label>
-                <input
-                  type="text"
-                  value={formData.image}
-                  onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20"
-                  placeholder="https://..."
-                />
+              <div className="space-y-2">
+                <label className="text-sm font-medium">图片URL</label>
+                <div className="flex gap-2">
+                  <Input
+                    value={formData.image}
+                    onChange={(e) => setFormData({ ...formData, image: e.target.value })}
+                    placeholder="https://..."
+                  />
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">价格（积分）</label>
-                  <input
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">价格（积分）</label>
+                  <Input
                     type="number"
                     value={formData.price}
                     onChange={(e) => setFormData({ ...formData, price: parseInt(e.target.value) || 0 })}
-                    className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20"
                     min={1}
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">状态</label>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">状态</label>
                   <select
                     value={formData.status}
                     onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                    className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20"
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {STATUS_OPTIONS.map((opt) => (
                       <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -358,145 +360,145 @@ export function AdminProducts() {
                   </select>
                 </div>
               </div>
-            </div>
-
-            <div className="flex gap-3 mt-6">
-              <button
-                onClick={() => { setShowCreateModal(false); setShowEditModal(false); resetForm(); }}
-                className="flex-1 px-4 py-2 border rounded-lg hover:bg-muted"
-                disabled={submitting}
-              >
-                取消
-              </button>
-              <button
-                onClick={showCreateModal ? handleCreate : handleUpdate}
-                disabled={submitting || !formData.name}
-                className="flex-1 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90 disabled:opacity-50"
-              >
-                {submitting ? '保存中...' : '保存'}
-              </button>
-            </div>
-          </div>
+              
+              <div className="flex justify-end gap-2 pt-4">
+                 <Button variant="outline" onClick={() => { setShowCreateModal(false); setShowEditModal(false); resetForm(); }} disabled={submitting}>
+                    取消
+                 </Button>
+                 <Button onClick={showCreateModal ? handleCreate : handleUpdate} disabled={submitting || !formData.name}>
+                    {submitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                    {showCreateModal ? '创建' : '保存'}
+                 </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       )}
 
       {/* Delete Confirmation Modal */}
       {showDeleteModal && selectedProduct && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-card rounded-xl p-6 max-w-md w-full mx-4 shadow-xl">
-            <h2 className="text-xl font-bold mb-4">确认删除</h2>
-            <p className="text-muted-foreground mb-6">
-              确定要删除商品 <span className="font-semibold text-foreground">{selectedProduct.name}</span> 吗？此操作不可撤销。
-            </p>
-            <div className="flex gap-3">
-              <button
-                onClick={() => { setShowDeleteModal(false); setSelectedProduct(null); }}
-                className="flex-1 px-4 py-2 border rounded-lg hover:bg-muted"
-                disabled={submitting}
-              >
-                取消
-              </button>
-              <button
-                onClick={handleDelete}
-                disabled={submitting}
-                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:opacity-90 disabled:opacity-50"
-              >
-                {submitting ? '删除中...' : '确认删除'}
-              </button>
-            </div>
-          </div>
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <Card className="max-w-md w-full shadow-xl">
+            <CardHeader>
+               <CardTitle>确认删除</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground">
+                确定要删除商品 <span className="font-semibold text-foreground">{selectedProduct.name}</span> 吗？此操作不可撤销。
+              </p>
+              <div className="flex gap-3 mt-6 justify-end">
+                <Button
+                  variant="outline"
+                  onClick={() => { setShowDeleteModal(false); setSelectedProduct(null); }}
+                  disabled={submitting}
+                >
+                  取消
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={handleDelete}
+                  disabled={submitting}
+                >
+                  {submitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                  确认删除
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       )}
 
       {/* Card Keys Modal */}
       {showKeysModal && selectedProduct && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-card rounded-xl p-6 max-w-2xl w-full mx-4 shadow-xl max-h-[80vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold">{selectedProduct.name} - 卡密管理</h2>
-              <button
-                onClick={() => { setShowImportModal(true); }}
-                className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90 text-sm"
-              >
-                导入卡密
-              </button>
-            </div>
-            
-            <div className="mb-4 p-3 bg-muted/50 rounded-lg flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">
-                总计: {cardKeys.length} 个卡密
-              </span>
-              <div className="flex items-center gap-4 text-sm">
-                <span className="text-green-600">
-                  可用: {cardKeys.filter(k => k.status === 'available').length}
-                </span>
-                <span className="text-gray-500">
-                  已兑换: {cardKeys.filter(k => k.status === 'redeemed').length}
-                </span>
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <Card className="max-w-2xl w-full max-h-[80vh] overflow-hidden flex flex-col shadow-xl">
+            <CardHeader className="flex flex-row items-center justify-between border-b pb-4">
+              <div>
+                <CardTitle>{selectedProduct.name} - 卡密管理</CardTitle>
               </div>
-            </div>
+              <div className="flex items-center gap-2">
+                <Button size="sm" onClick={() => setShowImportModal(true)}>
+                  <Upload className="w-4 h-4 mr-2" /> 导入卡密
+                </Button>
+                <Button variant="ghost" size="icon" onClick={() => { setShowKeysModal(false); setSelectedProduct(null); setCardKeys([]); }}>
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="flex-1 overflow-hidden flex flex-col p-0">
+              <div className="p-4 bg-muted/30 border-b flex items-center justify-between">
+                <span className="text-sm font-medium">
+                  总计: {cardKeys.length} 个
+                </span>
+                <div className="flex items-center gap-3 text-sm">
+                  <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                    可用: {cardKeys.filter(k => k.status === 'available').length}
+                  </Badge>
+                  <Badge variant="outline" className="bg-muted text-muted-foreground">
+                    已兑换: {cardKeys.filter(k => k.status === 'redeemed').length}
+                  </Badge>
+                </div>
+              </div>
 
-            <div className="space-y-2 max-h-[400px] overflow-y-auto">
-              {cardKeys.length === 0 ? (
-                <p className="text-center text-muted-foreground py-8">暂无卡密，请导入</p>
-              ) : (
-                cardKeys.map((key) => (
-                  <div key={key.id} className="flex items-center justify-between p-3 border rounded-lg">
-                    <code className="text-sm font-mono bg-muted px-2 py-1 rounded">
-                      {key.key_content}
-                    </code>
-                    <span className={`text-xs px-2 py-1 rounded ${
-                      key.status === 'available' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'
-                    }`}>
-                      {key.status === 'available' ? '可用' : '已兑换'}
-                    </span>
+              <div className="flex-1 overflow-y-auto p-4 space-y-2">
+                {cardKeys.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center h-full text-muted-foreground py-8">
+                    <Key className="w-10 h-10 mb-2 opacity-20" />
+                    <p>暂无卡密，请导入</p>
                   </div>
-                ))
-              )}
-            </div>
-
-            <button
-              onClick={() => { setShowKeysModal(false); setSelectedProduct(null); setCardKeys([]); }}
-              className="w-full mt-6 px-4 py-2 border rounded-lg hover:bg-muted"
-            >
-              关闭
-            </button>
-          </div>
+                ) : (
+                  cardKeys.map((key) => (
+                    <div key={key.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/30 transition-colors">
+                      <code className="text-sm font-mono bg-muted px-2 py-1 rounded select-all">
+                        {key.key_content}
+                      </code>
+                      <Badge variant={key.status === 'available' ? 'default' : 'secondary'} className={cn(key.status === 'available' && 'bg-green-600 hover:bg-green-700')}>
+                        {key.status === 'available' ? '可用' : '已兑换'}
+                      </Badge>
+                    </div>
+                  ))
+                )}
+              </div>
+            </CardContent>
+          </Card>
         </div>
       )}
 
       {/* Import Keys Modal */}
       {showImportModal && selectedProduct && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-card rounded-xl p-6 max-w-md w-full mx-4 shadow-xl">
-            <h2 className="text-xl font-bold mb-4">导入卡密</h2>
-            <p className="text-sm text-muted-foreground mb-4">
-              每行一个卡密，支持批量导入
-            </p>
-            <textarea
-              value={importText}
-              onChange={(e) => setImportText(e.target.value)}
-              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 font-mono text-sm"
-              rows={10}
-              placeholder="XXXX-XXXX-XXXX&#10;YYYY-YYYY-YYYY&#10;..."
-            />
-            <div className="flex gap-3 mt-4">
-              <button
-                onClick={() => { setShowImportModal(false); setImportText(''); }}
-                className="flex-1 px-4 py-2 border rounded-lg hover:bg-muted"
-                disabled={submitting}
-              >
-                取消
-              </button>
-              <button
-                onClick={handleImportKeys}
-                disabled={submitting || !importText.trim()}
-                className="flex-1 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90 disabled:opacity-50"
-              >
-                {submitting ? '导入中...' : '确认导入'}
-              </button>
-            </div>
-          </div>
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <Card className="max-w-md w-full shadow-xl">
+            <CardHeader>
+               <CardTitle>导入卡密</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground mb-4">
+                每行一个卡密，支持批量导入
+              </p>
+              <textarea
+                value={importText}
+                onChange={(e) => setImportText(e.target.value)}
+                className="w-full min-h-[200px] px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 font-mono text-sm resize-none"
+                placeholder="XXXX-XXXX-XXXX&#10;YYYY-YYYY-YYYY&#10;..."
+              />
+              <div className="flex gap-3 mt-4 justify-end">
+                <Button
+                  variant="outline"
+                  onClick={() => { setShowImportModal(false); setImportText(''); }}
+                  disabled={submitting}
+                >
+                  取消
+                </Button>
+                <Button
+                  onClick={handleImportKeys}
+                  disabled={submitting || !importText.trim()}
+                >
+                  {submitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                  确认导入
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       )}
     </div>

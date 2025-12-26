@@ -6,6 +6,11 @@ import {
   type AdminLog,
   type AdminLogQuery,
 } from '../../api/admin';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Loader2, Filter, FileText, ChevronLeft, ChevronRight, X, Eye } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 const ACTION_OPTIONS = [
   { value: '', label: '全部操作' },
@@ -94,175 +99,203 @@ export function AdminLogs() {
   };
 
   const getActionColor = (action: string) => {
-    if (action.includes('delete')) return 'bg-red-100 text-red-700';
-    if (action.includes('create')) return 'bg-green-100 text-green-700';
-    if (action.includes('update') || action.includes('adjust')) return 'bg-blue-100 text-blue-700';
-    return 'bg-gray-100 text-gray-700';
+    if (action.includes('delete')) return 'destructive';
+    if (action.includes('create')) return 'default'; // Map to default (primary) or specific green style via className
+    if (action.includes('update') || action.includes('adjust')) return 'secondary';
+    return 'outline';
   };
+
+  const getActionClassName = (action: string) => {
+     if (action.includes('create')) return 'bg-green-600 hover:bg-green-700';
+     if (action.includes('update') || action.includes('adjust')) return 'bg-blue-600 text-white hover:bg-blue-700';
+     return '';
+  }
 
   return (
     <div className="space-y-6">
       {/* Filters */}
-      <div className="flex items-center gap-4">
-        <select
-          value={actionFilter}
-          onChange={(e) => setActionFilter(e.target.value)}
-          className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20"
-        >
-          {ACTION_OPTIONS.map((opt) => (
-            <option key={opt.value} value={opt.value}>{opt.label}</option>
-          ))}
-        </select>
-        <select
-          value={targetTypeFilter}
-          onChange={(e) => setTargetTypeFilter(e.target.value)}
-          className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20"
-        >
-          {TARGET_TYPE_OPTIONS.map((opt) => (
-            <option key={opt.value} value={opt.value}>{opt.label}</option>
-          ))}
-        </select>
-        <button
-          onClick={handleFilter}
-          className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90"
-        >
+      <div className="flex flex-col sm:flex-row items-center gap-4 bg-card p-4 rounded-lg border">
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <Filter className="w-4 h-4 text-muted-foreground" />
+          <select
+            value={actionFilter}
+            onChange={(e) => setActionFilter(e.target.value)}
+            className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {ACTION_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            ))}
+          </select>
+        </div>
+        <div className="w-full sm:w-auto">
+          <select
+            value={targetTypeFilter}
+            onChange={(e) => setTargetTypeFilter(e.target.value)}
+            className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {TARGET_TYPE_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            ))}
+          </select>
+        </div>
+        <Button onClick={handleFilter} className="w-full sm:w-auto">
           筛选
-        </button>
+        </Button>
       </div>
 
       {error && (
-        <div className="p-4 bg-red-50 text-red-600 rounded-lg">{error}</div>
+        <div className="p-4 bg-destructive/10 text-destructive rounded-lg flex items-center gap-2">
+          <X className="w-4 h-4" />
+          {error}
+        </div>
       )}
 
       {/* Logs Table */}
-      <div className="bg-card rounded-xl border overflow-hidden">
-        <table className="w-full">
-          <thead className="bg-muted/50">
-            <tr>
-              <th className="px-4 py-3 text-left text-sm font-medium">时间</th>
-              <th className="px-4 py-3 text-left text-sm font-medium">操作者</th>
-              <th className="px-4 py-3 text-left text-sm font-medium">操作</th>
-              <th className="px-4 py-3 text-left text-sm font-medium">目标类型</th>
-              <th className="px-4 py-3 text-left text-sm font-medium">目标ID</th>
-              <th className="px-4 py-3 text-left text-sm font-medium">详情</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y">
-            {loading ? (
-              <tr>
-                <td colSpan={6} className="px-4 py-8 text-center">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-                </td>
+      <Card>
+        <div className="relative w-full overflow-auto">
+          <table className="w-full caption-bottom text-sm">
+            <thead className="[&_tr]:border-b">
+              <tr className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
+                <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">时间</th>
+                <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">操作者</th>
+                <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">操作</th>
+                <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">目标类型</th>
+                <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">目标ID</th>
+                <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">详情</th>
               </tr>
-            ) : logs.length === 0 ? (
-              <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
-                  暂无操作日志
-                </td>
-              </tr>
-            ) : (
-              logs.map((log) => (
-                <tr key={log.id} className="hover:bg-muted/30">
-                  <td className="px-4 py-3 text-sm text-muted-foreground">
-                    {formatDate(log.created_at)}
-                  </td>
-                  <td className="px-4 py-3 text-sm font-medium">
-                    {log.admin_name || `管理员 #${log.admin_id}`}
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className={`text-xs px-2 py-1 rounded ${getActionColor(log.action)}`}>
-                      {getActionLabel(log.action)}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-sm">
-                    {getTargetTypeLabel(log.target_type)}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-muted-foreground">
-                    {log.target_id || '-'}
-                  </td>
-                  <td className="px-4 py-3">
-                    <button
-                      onClick={() => setSelectedLog(log)}
-                      className="text-sm text-primary hover:underline"
-                    >
-                      查看
-                    </button>
+            </thead>
+            <tbody className="[&_tr:last-child]:border-0">
+              {loading ? (
+                <tr>
+                  <td colSpan={6} className="p-8 text-center">
+                    <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+              ) : logs.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="p-8 text-center text-muted-foreground">
+                    暂无操作日志
+                  </td>
+                </tr>
+              ) : (
+                logs.map((log) => (
+                  <tr key={log.id} className="border-b transition-colors hover:bg-muted/50">
+                    <td className="p-4 align-middle text-muted-foreground">
+                      {formatDate(log.created_at)}
+                    </td>
+                    <td className="p-4 align-middle font-medium">
+                      {log.admin_name || `管理员 #${log.admin_id}`}
+                    </td>
+                    <td className="p-4 align-middle">
+                      <Badge 
+                        variant={getActionColor(log.action) as any} 
+                        className={cn(getActionClassName(log.action))}
+                      >
+                        {getActionLabel(log.action)}
+                      </Badge>
+                    </td>
+                    <td className="p-4 align-middle">
+                      {getTargetTypeLabel(log.target_type)}
+                    </td>
+                    <td className="p-4 align-middle text-muted-foreground font-mono">
+                      {log.target_id || '-'}
+                    </td>
+                    <td className="p-4 align-middle">
+                      <Button variant="ghost" size="sm" onClick={() => setSelectedLog(log)}>
+                        <Eye className="w-4 h-4 mr-1" /> 查看
+                      </Button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </Card>
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">
-            共 {total} 条日志，第 {page} / {totalPages} 页
-          </p>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => handlePageChange(page - 1)}
-              disabled={page <= 1}
-              className="px-4 py-2 border rounded-lg hover:bg-muted disabled:opacity-50"
-            >
-              上一页
-            </button>
-            <button
-              onClick={() => handlePageChange(page + 1)}
-              disabled={page >= totalPages}
-              className="px-4 py-2 border rounded-lg hover:bg-muted disabled:opacity-50"
-            >
-              下一页
-            </button>
+        <div className="flex items-center justify-center gap-4 pt-4">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => handlePageChange(page - 1)}
+            disabled={page <= 1}
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </Button>
+          <div className="flex flex-col items-center">
+            <span className="text-sm text-muted-foreground">
+              {page} / {totalPages}
+            </span>
+            <span className="text-xs text-muted-foreground mt-1">
+              共 {total} 条日志
+            </span>
           </div>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => handlePageChange(page + 1)}
+            disabled={page >= totalPages}
+          >
+            <ChevronRight className="w-4 h-4" />
+          </Button>
         </div>
       )}
 
       {/* Detail Modal */}
       {selectedLog && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-card rounded-xl p-6 max-w-lg w-full mx-4 shadow-xl">
-            <h2 className="text-xl font-bold mb-4">操作详情</h2>
-            
-            <div className="space-y-3">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">时间</span>
-                <span>{formatDate(selectedLog.created_at)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">操作者</span>
-                <span>{selectedLog.admin_name || `管理员 #${selectedLog.admin_id}`}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">操作</span>
-                <span className={`text-xs px-2 py-1 rounded ${getActionColor(selectedLog.action)}`}>
-                  {getActionLabel(selectedLog.action)}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">目标</span>
-                <span>{getTargetTypeLabel(selectedLog.target_type)} #{selectedLog.target_id || '-'}</span>
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <Card className="w-full max-w-lg shadow-xl">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle>操作详情</CardTitle>
+              <Button variant="ghost" size="icon" onClick={() => setSelectedLog(null)}>
+                <X className="w-4 h-4" />
+              </Button>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <span className="text-muted-foreground block mb-1">时间</span>
+                  <span>{formatDate(selectedLog.created_at)}</span>
+                </div>
+                <div>
+                  <span className="text-muted-foreground block mb-1">操作者</span>
+                  <span>{selectedLog.admin_name || `管理员 #${selectedLog.admin_id}`}</span>
+                </div>
+                <div>
+                  <span className="text-muted-foreground block mb-1">操作</span>
+                  <Badge 
+                    variant={getActionColor(selectedLog.action) as any}
+                    className={cn(getActionClassName(selectedLog.action))}
+                  >
+                    {getActionLabel(selectedLog.action)}
+                  </Badge>
+                </div>
+                <div>
+                  <span className="text-muted-foreground block mb-1">目标</span>
+                  <span>{getTargetTypeLabel(selectedLog.target_type)} #{selectedLog.target_id || '-'}</span>
+                </div>
               </div>
               
               {selectedLog.details && (
-                <div>
-                  <p className="text-muted-foreground mb-2">详细信息</p>
-                  <pre className="p-3 bg-muted rounded-lg text-sm overflow-x-auto">
+                <div className="pt-2 border-t">
+                  <p className="text-sm font-medium mb-2 flex items-center gap-2">
+                    <FileText className="w-4 h-4" /> 详细信息
+                  </p>
+                  <pre className="p-3 bg-muted rounded-lg text-xs font-mono overflow-x-auto">
                     {JSON.stringify(selectedLog.details, null, 2)}
                   </pre>
                 </div>
               )}
-            </div>
-
-            <button
-              onClick={() => setSelectedLog(null)}
-              className="w-full mt-6 px-4 py-2 border rounded-lg hover:bg-muted"
-            >
-              关闭
-            </button>
-          </div>
+              
+              <div className="flex justify-end pt-2">
+                <Button onClick={() => setSelectedLog(null)}>
+                  关闭
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       )}
     </div>

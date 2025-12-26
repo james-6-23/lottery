@@ -7,22 +7,23 @@ import {
   getExchangeRecords,
   redeemProduct,
   getProductStatusLabel,
-  getProductStatusColor,
   type Product,
   type ExchangeRecord,
   type RedeemResponse,
 } from '../api/exchange';
 import { ApiError } from '../api/client';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { ShoppingBag, History, Gift, Copy, Check, AlertTriangle, Loader2, Coins, Package, ChevronLeft, ChevronRight } from 'lucide-react';
 
 const PAGE_SIZE = 12;
-
-type TabType = 'products' | 'records';
 
 export function Exchange() {
   const navigate = useNavigate();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   
-  const [activeTab, setActiveTab] = useState<TabType>('products');
   const [balance, setBalance] = useState<number>(0);
   const [products, setProducts] = useState<Product[]>([]);
   const [records, setRecords] = useState<ExchangeRecord[]>([]);
@@ -97,14 +98,6 @@ export function Exchange() {
     loadData();
   }, [isAuthenticated, authLoading, fetchProducts, fetchBalance, fetchRecords]);
 
-  // Handle tab change
-  const handleTabChange = (tab: TabType) => {
-    setActiveTab(tab);
-    if (tab === 'records' && isAuthenticated) {
-      fetchRecords(1);
-    }
-  };
-
   // Handle redeem click
   const handleRedeemClick = (product: Product) => {
     if (!isAuthenticated) {
@@ -170,7 +163,7 @@ export function Exchange() {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto mb-4" />
           <p className="text-muted-foreground">加载中...</p>
         </div>
       </div>
@@ -179,318 +172,309 @@ export function Exchange() {
 
   if (error) {
     return (
-      <div className="text-center py-12">
-        <p className="text-red-500 mb-4">{error}</p>
-        <button
-          onClick={() => window.location.reload()}
-          className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90"
-        >
-          重试
-        </button>
+      <div className="text-center py-12 space-y-4">
+        <p className="text-destructive">{error}</p>
+        <Button onClick={() => window.location.reload()}>重试</Button>
       </div>
     );
   }
 
 
   return (
-    <div className="max-w-6xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">兑换商城</h1>
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div>
+           <h1 className="text-3xl font-bold tracking-tight">兑换商城</h1>
+           <p className="text-muted-foreground">使用积分兑换精美礼品</p>
+        </div>
         {isAuthenticated && (
-          <div className="bg-primary/10 px-4 py-2 rounded-lg">
-            <span className="text-sm text-muted-foreground">当前积分：</span>
-            <span className="text-lg font-bold text-primary ml-1">{balance}</span>
-          </div>
+          <Card className="px-4 py-2 flex items-center gap-3 shadow-sm">
+             <div className="p-2 bg-primary/10 rounded-full">
+               <Coins className="w-5 h-5 text-primary" />
+             </div>
+             <div>
+               <p className="text-xs text-muted-foreground">当前积分</p>
+               <p className="text-xl font-bold text-primary">{balance}</p>
+             </div>
+          </Card>
         )}
       </div>
 
-      {/* Tabs */}
-      <div className="flex border-b mb-6">
-        <button
-          onClick={() => handleTabChange('products')}
-          className={`px-6 py-3 font-medium transition-colors ${
-            activeTab === 'products'
-              ? 'text-primary border-b-2 border-primary'
-              : 'text-muted-foreground hover:text-foreground'
-          }`}
-        >
-          商品列表
-        </button>
-        {isAuthenticated && (
-          <button
-            onClick={() => handleTabChange('records')}
-            className={`px-6 py-3 font-medium transition-colors ${
-              activeTab === 'records'
-                ? 'text-primary border-b-2 border-primary'
-                : 'text-muted-foreground hover:text-foreground'
-            }`}
-          >
-            兑换记录
-          </button>
-        )}
-      </div>
+      <Tabs defaultValue="products" className="w-full">
+        <TabsList className="grid w-full max-w-md grid-cols-2 mb-6">
+          <TabsTrigger value="products" className="gap-2">
+            <ShoppingBag className="w-4 h-4" /> 商品列表
+          </TabsTrigger>
+          {isAuthenticated && (
+             <TabsTrigger value="records" className="gap-2">
+               <History className="w-4 h-4" /> 兑换记录
+             </TabsTrigger>
+          )}
+        </TabsList>
 
-      {/* Products Tab */}
-      {activeTab === 'products' && (
-        <>
+        <TabsContent value="products" className="space-y-6">
           {products.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
-              暂无可兑换商品
+            <div className="flex flex-col items-center justify-center py-12 text-center border rounded-lg bg-muted/10 border-dashed">
+              <Package className="w-12 h-12 text-muted-foreground mb-4" />
+              <h3 className="text-lg font-medium">暂无可兑换商品</h3>
+              <p className="text-muted-foreground">请稍后再来看看吧</p>
             </div>
           ) : (
             <>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {products.map((product) => (
-                  <div
-                    key={product.id}
-                    className="bg-card rounded-xl border shadow-sm overflow-hidden hover:shadow-md transition-shadow"
-                  >
-                    {/* Product Image */}
-                    <div className="aspect-video bg-muted flex items-center justify-center">
+                  <Card key={product.id} className="overflow-hidden hover:shadow-lg transition-all duration-300 group">
+                    <div className="aspect-video bg-muted relative overflow-hidden flex items-center justify-center">
                       {product.image ? (
                         <img
                           src={product.image}
                           alt={product.name}
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                         />
                       ) : (
-                        <span className="text-6xl">🎁</span>
+                        <Gift className="w-16 h-16 text-muted-foreground/30" />
                       )}
+                      
+                      <div className="absolute top-2 right-2">
+                        {product.status === 'available' ? (
+                           <Badge className="bg-green-600">可兑换</Badge>
+                        ) : (
+                           <Badge variant={product.status === 'sold_out' ? "destructive" : "secondary"}>
+                             {getProductStatusLabel(product.status)}
+                           </Badge>
+                        )}
+                      </div>
                     </div>
                     
-                    {/* Product Info */}
-                    <div className="p-4">
-                      <div className="flex items-start justify-between mb-2">
-                        <h3 className="font-semibold text-lg">{product.name}</h3>
-                        <span className={`text-sm ${getProductStatusColor(product.status)}`}>
-                          {getProductStatusLabel(product.status)}
-                        </span>
-                      </div>
-                      
-                      <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
+                    <CardHeader className="p-4 pb-2">
+                      <CardTitle className="line-clamp-1 text-lg">{product.name}</CardTitle>
+                      <CardDescription className="line-clamp-2 h-10 text-xs mt-1">
                         {product.description || '暂无描述'}
-                      </p>
-                      
+                      </CardDescription>
+                    </CardHeader>
+                    
+                    <CardContent className="p-4 pt-2">
                       <div className="flex items-center justify-between">
-                        <div>
-                          <span className="text-2xl font-bold text-primary">{product.price}</span>
-                          <span className="text-sm text-muted-foreground ml-1">积分</span>
-                        </div>
-                        <div className="text-sm text-muted-foreground">
-                          库存: {product.stock}
-                        </div>
+                         <div>
+                            <span className="text-lg font-bold text-primary">{product.price}</span>
+                            <span className="text-xs text-muted-foreground ml-1">积分</span>
+                         </div>
+                         <span className="text-xs text-muted-foreground bg-secondary px-2 py-0.5 rounded-full">
+                           库存: {product.stock}
+                         </span>
                       </div>
-                      
-                      <button
+                    </CardContent>
+
+                    <CardFooter className="p-4 pt-0">
+                      <Button 
+                        className="w-full" 
                         onClick={() => handleRedeemClick(product)}
                         disabled={product.status !== 'available' || product.stock <= 0}
-                        className="w-full mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
+                        variant={product.status === 'available' ? "default" : "secondary"}
                       >
-                        {product.status === 'sold_out' ? '已兑完' : '立即兑换'}
-                      </button>
-                    </div>
-                  </div>
+                         {product.status === 'sold_out' ? '已兑完' : '立即兑换'}
+                      </Button>
+                    </CardFooter>
+                  </Card>
                 ))}
               </div>
 
               {/* Pagination */}
               {productTotalPages > 1 && (
-                <div className="mt-8 flex items-center justify-center gap-2">
-                  <button
+                <div className="flex justify-center gap-4 mt-8">
+                  <Button
+                    variant="outline"
+                    size="icon"
                     onClick={() => fetchProducts(productPage - 1)}
                     disabled={productPage <= 1}
-                    className="px-4 py-2 border rounded-lg hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    上一页
-                  </button>
-                  <span className="px-4 py-2 text-muted-foreground">
+                    <ChevronLeft className="w-4 h-4" />
+                  </Button>
+                  <span className="flex items-center text-sm text-muted-foreground">
                     {productPage} / {productTotalPages}
                   </span>
-                  <button
+                  <Button
+                    variant="outline"
+                    size="icon"
                     onClick={() => fetchProducts(productPage + 1)}
                     disabled={productPage >= productTotalPages}
-                    className="px-4 py-2 border rounded-lg hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    下一页
-                  </button>
+                    <ChevronRight className="w-4 h-4" />
+                  </Button>
                 </div>
               )}
             </>
           )}
-        </>
-      )}
+        </TabsContent>
 
 
-      {/* Records Tab */}
-      {activeTab === 'records' && isAuthenticated && (
-        <>
-          {records.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
-              暂无兑换记录
-            </div>
-          ) : (
-            <>
-              <div className="bg-card rounded-xl border shadow-sm overflow-hidden">
+        {isAuthenticated && (
+          <TabsContent value="records">
+            {records.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12 text-center border rounded-lg bg-muted/10 border-dashed">
+                <History className="w-12 h-12 text-muted-foreground mb-4" />
+                <h3 className="text-lg font-medium">暂无兑换记录</h3>
+              </div>
+            ) : (
+              <Card>
                 <div className="divide-y">
                   {records.map((record) => (
-                    <div
-                      key={record.id}
-                      className="p-4 hover:bg-muted/50 transition-colors"
-                    >
-                      <div className="flex items-center justify-between mb-2">
-                        <h3 className="font-semibold">{record.product_name}</h3>
-                        <span className="text-sm text-muted-foreground">
+                    <div key={record.id} className="p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-muted/50 transition-colors">
+                      <div className="space-y-1">
+                        <div className="font-semibold">{record.product_name}</div>
+                        <div className="text-sm text-muted-foreground">
                           {formatDate(record.created_at)}
-                        </span>
+                        </div>
                       </div>
                       
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm text-muted-foreground">卡密：</span>
-                          <code className="px-2 py-1 bg-muted rounded text-sm font-mono">
-                            {record.card_key}
-                          </code>
-                          <button
-                            onClick={() => copyToClipboard(record.card_key)}
-                            className="text-primary hover:text-primary/80 text-sm"
-                          >
-                            复制
-                          </button>
+                      <div className="flex flex-col md:flex-row md:items-center gap-4">
+                        <div className="flex items-center gap-2 bg-muted rounded-md px-3 py-1.5 border">
+                          <span className="text-xs text-muted-foreground">卡密:</span>
+                          <code className="text-sm font-mono select-all">{record.card_key}</code>
+                          <Button variant="ghost" size="icon" className="h-6 w-6 ml-1" onClick={() => copyToClipboard(record.card_key)}>
+                            <Copy className="w-3 h-3" />
+                          </Button>
                         </div>
-                        <span className="text-orange-500 font-medium">
+                        <div className="text-right font-medium text-orange-500 whitespace-nowrap">
                           -{record.cost} 积分
-                        </span>
+                        </div>
                       </div>
                     </div>
                   ))}
                 </div>
-              </div>
-
-              {/* Pagination */}
-              {recordTotalPages > 1 && (
-                <div className="mt-8 flex items-center justify-center gap-2">
-                  <button
-                    onClick={() => fetchRecords(recordPage - 1)}
-                    disabled={recordPage <= 1}
-                    className="px-4 py-2 border rounded-lg hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    上一页
-                  </button>
-                  <span className="px-4 py-2 text-muted-foreground">
-                    {recordPage} / {recordTotalPages}
-                  </span>
-                  <button
-                    onClick={() => fetchRecords(recordPage + 1)}
-                    disabled={recordPage >= recordTotalPages}
-                    className="px-4 py-2 border rounded-lg hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    下一页
-                  </button>
-                </div>
-              )}
-            </>
-          )}
-        </>
-      )}
+                
+                 {/* Pagination */}
+                {recordTotalPages > 1 && (
+                  <div className="flex justify-center gap-4 p-4 border-t">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => fetchRecords(recordPage - 1)}
+                      disabled={recordPage <= 1}
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </Button>
+                    <span className="flex items-center text-sm text-muted-foreground">
+                      {recordPage} / {recordTotalPages}
+                    </span>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => fetchRecords(recordPage + 1)}
+                      disabled={recordPage >= recordTotalPages}
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                    </Button>
+                  </div>
+                )}
+              </Card>
+            )}
+          </TabsContent>
+        )}
+      </Tabs>
 
       {/* Confirm Modal */}
       {showConfirmModal && selectedProduct && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-card rounded-xl p-6 max-w-md w-full mx-4 shadow-xl">
-            <h2 className="text-xl font-bold mb-4">确认兑换</h2>
-            
-            <div className="mb-6">
-              <p className="text-muted-foreground mb-4">
-                确定要兑换以下商品吗？
-              </p>
-              
-              <div className="bg-muted/50 rounded-lg p-4">
-                <p className="font-semibold mb-2">{selectedProduct.name}</p>
-                <p className="text-sm text-muted-foreground mb-2">
-                  {selectedProduct.description}
-                </p>
-                <p className="text-lg">
-                  需要 <span className="font-bold text-primary">{selectedProduct.price}</span> 积分
-                </p>
-              </div>
-              
-              {balance < selectedProduct.price && (
-                <p className="text-red-500 text-sm mt-2">
-                  积分不足，当前余额：{balance} 积分
-                </p>
-              )}
-              
-              {redeemError && (
-                <p className="text-red-500 text-sm mt-2">{redeemError}</p>
-              )}
-            </div>
-            
-            <div className="flex gap-3">
-              <button
-                onClick={() => setShowConfirmModal(false)}
-                className="flex-1 px-4 py-2 border rounded-lg hover:bg-muted"
-                disabled={redeeming}
-              >
-                取消
-              </button>
-              <button
-                onClick={handleConfirmRedeem}
-                disabled={redeeming || balance < selectedProduct.price}
-                className="flex-1 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {redeeming ? '兑换中...' : '确认兑换'}
-              </button>
-            </div>
-          </div>
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <Card className="max-w-md w-full shadow-2xl animate-in fade-in zoom-in duration-200">
+            <CardHeader>
+              <CardTitle>确认兑换</CardTitle>
+              <CardDescription>
+                您确定要消耗积分兑换此商品吗？
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+               <div className="bg-muted p-4 rounded-lg flex gap-4">
+                  {selectedProduct.image ? (
+                    <img src={selectedProduct.image} className="w-16 h-16 rounded object-cover bg-background" />
+                  ) : (
+                    <div className="w-16 h-16 rounded bg-background flex items-center justify-center">
+                      <Gift className="w-8 h-8 text-muted-foreground" />
+                    </div>
+                  )}
+                  <div>
+                    <h4 className="font-semibold">{selectedProduct.name}</h4>
+                    <p className="text-primary font-bold mt-1">{selectedProduct.price} <span className="text-xs font-normal text-muted-foreground">积分</span></p>
+                  </div>
+               </div>
+
+               {balance < selectedProduct.price && (
+                 <div className="flex items-center gap-2 text-destructive text-sm bg-destructive/10 p-3 rounded">
+                    <AlertTriangle className="w-4 h-4" />
+                    积分不足，当前余额：{balance}
+                 </div>
+               )}
+               
+               {redeemError && (
+                 <div className="flex items-center gap-2 text-destructive text-sm bg-destructive/10 p-3 rounded">
+                    <AlertTriangle className="w-4 h-4" />
+                    {redeemError}
+                 </div>
+               )}
+            </CardContent>
+            <CardFooter className="flex gap-2 justify-end">
+              <Button variant="outline" onClick={() => setShowConfirmModal(false)} disabled={redeeming}>取消</Button>
+              <Button onClick={handleConfirmRedeem} disabled={redeeming || balance < selectedProduct.price}>
+                {redeeming && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                确认兑换
+              </Button>
+            </CardFooter>
+          </Card>
         </div>
       )}
 
 
       {/* Result Modal */}
       {showResultModal && redeemResult && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-card rounded-xl p-6 max-w-md w-full mx-4 shadow-xl">
-            <div className="text-center mb-6">
-              <div className="text-6xl mb-4">🎉</div>
-              <h2 className="text-xl font-bold mb-2">兑换成功！</h2>
-              <p className="text-muted-foreground">
-                您已成功兑换 {redeemResult.product_name}
-              </p>
-            </div>
-            
-            <div className="bg-muted/50 rounded-lg p-4 mb-6">
-              <p className="text-sm text-muted-foreground mb-2">您的卡密：</p>
-              <div className="flex items-center gap-2">
-                <code className="flex-1 px-3 py-2 bg-background rounded font-mono text-lg break-all">
-                  {redeemResult.card_key}
-                </code>
-                <button
-                  onClick={() => copyToClipboard(redeemResult.card_key)}
-                  className="px-3 py-2 bg-primary text-primary-foreground rounded hover:opacity-90"
-                >
-                  复制
-                </button>
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <Card className="max-w-md w-full shadow-2xl animate-in fade-in zoom-in duration-200 border-primary/20">
+            <CardHeader className="text-center pb-2">
+              <div className="mx-auto w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mb-4">
+                <Check className="w-8 h-8 text-green-600 dark:text-green-400" />
               </div>
-              <p className="text-xs text-muted-foreground mt-2">
-                请妥善保管您的卡密，可在兑换记录中再次查看
-              </p>
-            </div>
-            
-            <div className="text-center text-sm text-muted-foreground mb-4">
-              消耗 {redeemResult.cost} 积分，剩余 {redeemResult.balance} 积分
-            </div>
-            
-            <button
-              onClick={() => {
-                setShowResultModal(false);
-                setRedeemResult(null);
-                setSelectedProduct(null);
-              }}
-              className="w-full px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90"
-            >
-              完成
-            </button>
-          </div>
+              <CardTitle className="text-2xl text-green-600 dark:text-green-400">兑换成功！</CardTitle>
+              <CardDescription>
+                您已成功兑换 {redeemResult.product_name}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-muted-foreground">您的卡密：</label>
+                <div className="flex items-center gap-2">
+                  <code className="flex-1 p-3 bg-muted rounded-lg font-mono text-lg text-center border-2 border-dashed border-primary/20 select-all">
+                    {redeemResult.card_key}
+                  </code>
+                  <Button onClick={() => copyToClipboard(redeemResult.card_key)} size="icon">
+                    <Copy className="w-4 h-4" />
+                  </Button>
+                </div>
+                <p className="text-xs text-center text-muted-foreground">
+                  请妥善保管您的卡密，可在兑换记录中再次查看
+                </p>
+              </div>
+              
+              <div className="flex justify-between text-sm pt-4 border-t">
+                <span className="text-muted-foreground">本次消耗</span>
+                <span className="font-medium">{redeemResult.cost} 积分</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">剩余积分</span>
+                <span className="font-medium">{redeemResult.balance} 积分</span>
+              </div>
+            </CardContent>
+            <CardFooter>
+              <Button 
+                className="w-full" 
+                onClick={() => {
+                  setShowResultModal(false);
+                  setRedeemResult(null);
+                  setSelectedProduct(null);
+                }}
+              >
+                完成
+              </Button>
+            </CardFooter>
+          </Card>
         </div>
       )}
     </div>

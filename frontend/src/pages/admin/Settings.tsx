@@ -4,6 +4,10 @@ import {
   updateSystemSettings,
   type UpdateSettingsRequest,
 } from '../../api/admin';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Loader2, Save, CreditCard, Info, Check, AlertTriangle } from 'lucide-react';
 
 export function AdminSettings() {
   const [loading, setLoading] = useState(true);
@@ -69,30 +73,42 @@ export function AdminSettings() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        <Loader2 className="h-12 w-12 animate-spin text-primary" />
       </div>
     );
   }
 
   return (
-    <div className="max-w-2xl space-y-6">
+    <div className="max-w-3xl space-y-6">
       {error && (
-        <div className="p-4 bg-red-50 text-red-600 rounded-lg">{error}</div>
+        <div className="p-4 bg-destructive/10 text-destructive rounded-lg flex items-center gap-2">
+          <AlertTriangle className="w-5 h-5" />
+          {error}
+        </div>
       )}
       
       {success && (
-        <div className="p-4 bg-green-50 text-green-600 rounded-lg">{success}</div>
+        <div className="p-4 bg-green-500/10 text-green-600 rounded-lg flex items-center gap-2">
+          <Check className="w-5 h-5" />
+          {success}
+        </div>
       )}
 
       {/* Payment Settings */}
-      <div className="bg-card rounded-xl border p-6">
-        <h2 className="text-lg font-semibold mb-4">💳 支付设置</h2>
-        
-        <div className="space-y-4">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <CreditCard className="w-5 h-5" /> 支付设置
+          </CardTitle>
+          <CardDescription>
+            配置易支付接口，开启积分充值功能
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
           {/* Payment Toggle */}
-          <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
-            <div>
-              <p className="font-medium">支付功能</p>
+          <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg border">
+            <div className="space-y-0.5">
+              <label className="text-base font-medium">支付功能</label>
               <p className="text-sm text-muted-foreground">
                 开启后用户可以通过易支付充值积分
               </p>
@@ -104,72 +120,79 @@ export function AdminSettings() {
                 onChange={(e) => setPaymentEnabled(e.target.checked)}
                 className="sr-only peer"
               />
-              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+              <div className="w-11 h-6 bg-muted peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
             </label>
           </div>
 
           {/* EPay Settings */}
-          <div className={`space-y-4 ${!paymentEnabled ? 'opacity-50 pointer-events-none' : ''}`}>
-            <div>
-              <label className="block text-sm font-medium mb-1">商户ID</label>
-              <input
-                type="text"
+          <div className={`space-y-4 transition-opacity duration-200 ${!paymentEnabled ? 'opacity-50 pointer-events-none' : ''}`}>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">商户ID</label>
+              <Input
                 value={epayMerchantId}
                 onChange={(e) => setEpayMerchantId(e.target.value)}
-                className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20"
                 placeholder="易支付商户ID"
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium mb-1">商户密钥</label>
-              <input
+            <div className="space-y-2">
+              <label className="text-sm font-medium">商户密钥</label>
+              <Input
                 type="password"
                 value={epaySecret}
                 onChange={(e) => setEpaySecret(e.target.value)}
-                className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20"
                 placeholder="易支付商户密钥"
               />
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-xs text-muted-foreground">
                 留空则保持原密钥不变
               </p>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium mb-1">回调地址</label>
-              <input
-                type="text"
+            <div className="space-y-2">
+              <label className="text-sm font-medium">回调地址</label>
+              <Input
                 value={epayCallbackUrl}
                 onChange={(e) => setEpayCallbackUrl(e.target.value)}
-                className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20"
                 placeholder="https://your-domain.com/api/wallet/recharge/callback"
               />
             </div>
           </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
       {/* Save Button */}
       <div className="flex justify-end">
-        <button
+        <Button
           onClick={handleSave}
           disabled={saving}
-          className="px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90 disabled:opacity-50"
+          className="min-w-[120px]"
         >
-          {saving ? '保存中...' : '保存设置'}
-        </button>
+          {saving ? (
+            <>
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" /> 保存中...
+            </>
+          ) : (
+            <>
+              <Save className="w-4 h-4 mr-2" /> 保存设置
+            </>
+          )}
+        </Button>
       </div>
 
       {/* Info Card */}
-      <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-        <h3 className="font-medium text-blue-800 mb-2">💡 配置说明</h3>
-        <ul className="text-sm text-blue-700 space-y-1">
-          <li>• 支付功能默认关闭，开启前请确保已正确配置易支付参数</li>
-          <li>• 商户ID和密钥可在易支付商户后台获取</li>
-          <li>• 回调地址需要配置为您的服务器可访问的公网地址</li>
-          <li>• 修改密钥时，留空表示保持原密钥不变</li>
-        </ul>
-      </div>
+      <Card className="bg-blue-50/50 border-blue-200 dark:bg-blue-950/10 dark:border-blue-900/20">
+        <CardContent className="p-4">
+          <h3 className="font-medium text-blue-800 dark:text-blue-400 mb-2 flex items-center gap-2">
+            <Info className="w-4 h-4" /> 配置说明
+          </h3>
+          <ul className="text-sm text-blue-700 dark:text-blue-300 space-y-1 list-disc pl-5">
+            <li>支付功能默认关闭，开启前请确保已正确配置易支付参数</li>
+            <li>商户ID和密钥可在易支付商户后台获取</li>
+            <li>回调地址需要配置为您的服务器可访问的公网地址</li>
+            <li>修改密钥时，留空表示保持原密钥不变</li>
+          </ul>
+        </CardContent>
+      </Card>
     </div>
   );
 }

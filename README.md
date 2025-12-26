@@ -81,7 +81,34 @@ npm run dev
 
 ## Docker 部署
 
-### 使用 Docker Compose（推荐）
+### 一键部署（推荐）
+
+#### Linux/macOS
+
+```bash
+# 下载部署脚本
+chmod +x deploy-prod.sh
+
+# 运行一键部署
+./deploy-prod.sh
+```
+
+#### Windows
+
+```cmd
+# 双击运行或在命令行执行
+deploy-prod.bat
+```
+
+部署脚本会引导您完成：
+1. 数据库配置（自动生成安全密码）
+2. JWT 密钥配置（自动生成）
+3. Linux.do OAuth 配置
+4. Redis 配置
+5. 支付配置（可选）
+6. 自动部署 Docker 容器
+
+### 手动部署
 
 #### 1. 配置环境变量
 
@@ -97,26 +124,46 @@ vim .env
 
 ```bash
 # 生产环境（PostgreSQL + Redis）
-docker-compose up -d
+docker compose up -d
 
 # 或开发环境（SQLite + 内存缓存）
-docker-compose -f docker-compose.dev.yml up -d
+docker compose -f docker-compose.dev.yml up -d
 ```
 
 #### 3. 访问应用
 
-- 前端：http://localhost
-- 后端 API：http://localhost:8080
-- 健康检查：http://localhost:8080/health
+- 前端：http://localhost:5678
+- 健康检查：http://localhost:5678/health
 
-### 单独构建镜像
+### Nginx 反向代理配置
+
+生产环境建议使用 Nginx 反向代理并配置 SSL：
 
 ```bash
-# 构建后端镜像
-docker build -t scratch-lottery-backend ./backend
+# 复制示例配置
+cp nginx-prod.conf.example /etc/nginx/sites-available/lottery
 
-# 构建前端镜像
-docker build -t scratch-lottery-frontend ./frontend
+# 修改域名和证书路径
+vim /etc/nginx/sites-available/lottery
+
+# 启用配置
+ln -s /etc/nginx/sites-available/lottery /etc/nginx/sites-enabled/
+
+# 测试并重载
+nginx -t && systemctl reload nginx
+```
+
+### SSL 证书配置（Let's Encrypt）
+
+```bash
+# 安装 certbot
+apt install certbot python3-certbot-nginx
+
+# 申请证书
+certbot --nginx -d lottery.example.com
+
+# 自动续期
+certbot renew --dry-run
 ```
 
 ## 环境变量配置

@@ -79,7 +79,7 @@ func Load() (*Config, error) {
 		OAuthMode:          getEnv("OAUTH_MODE", "dev"),
 		LinuxdoClientID:    getEnv("LINUXDO_CLIENT_ID", ""),
 		LinuxdoSecret:      getEnv("LINUXDO_SECRET", ""),
-		LinuxdoCallbackURL: getEnv("LINUXDO_CALLBACK_URL", "http://localhost:8080/api/auth/oauth/callback"),
+		LinuxdoCallbackURL: getEnv("LINUXDO_CALLBACK_URL", ""),
 
 		// Cache
 		CacheDriver:   getEnv("CACHE_DRIVER", "memory"),

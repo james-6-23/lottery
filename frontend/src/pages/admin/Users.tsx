@@ -6,6 +6,12 @@ import {
   type AdminUser,
   type UserListQuery,
 } from '../../api/admin';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Loader2, Search, Coins, Shield, User, ChevronLeft, ChevronRight, X, AlertTriangle } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 const ROLE_OPTIONS = [
   { value: '', label: '全部角色' },
@@ -130,222 +136,216 @@ export function AdminUsers() {
   return (
     <div className="space-y-6">
       {/* Search & Filter */}
-      <div className="flex items-center gap-4">
-        <div className="flex-1 flex items-center gap-2">
-          <input
-            type="text"
+      <div className="flex flex-col sm:flex-row items-center gap-4 bg-card p-4 rounded-lg border">
+        <div className="relative flex-1 w-full">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-            className="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20"
-            placeholder="搜索用户名或 Linux.do ID..."
+            className="pl-9"
+            placeholder="搜索用户名..."
           />
-          <select
-            value={roleFilter}
-            onChange={(e) => setRoleFilter(e.target.value)}
-            className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20"
-          >
-            {ROLE_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>{opt.label}</option>
-            ))}
-          </select>
-          <button
-            onClick={handleSearch}
-            className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90"
-          >
-            搜索
-          </button>
         </div>
+        <select
+          value={roleFilter}
+          onChange={(e) => setRoleFilter(e.target.value)}
+          className="h-10 px-3 border rounded-md bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring w-full sm:w-auto"
+        >
+          {ROLE_OPTIONS.map((opt) => (
+            <option key={opt.value} value={opt.value}>{opt.label}</option>
+          ))}
+        </select>
+        <Button onClick={handleSearch} className="w-full sm:w-auto">
+          搜索
+        </Button>
       </div>
 
       {error && (
-        <div className="p-4 bg-red-50 text-red-600 rounded-lg">{error}</div>
+        <div className="p-4 bg-destructive/10 text-destructive rounded-lg flex items-center gap-2">
+          <AlertTriangle className="w-5 h-5" />
+          {error}
+        </div>
       )}
 
       {/* Users Table */}
-      <div className="bg-card rounded-xl border overflow-hidden">
-        <table className="w-full">
-          <thead className="bg-muted/50">
-            <tr>
-              <th className="px-4 py-3 text-left text-sm font-medium">用户</th>
-              <th className="px-4 py-3 text-left text-sm font-medium">Linux.do ID</th>
-              <th className="px-4 py-3 text-left text-sm font-medium">角色</th>
-              <th className="px-4 py-3 text-left text-sm font-medium">积分余额</th>
-              <th className="px-4 py-3 text-left text-sm font-medium">注册时间</th>
-              <th className="px-4 py-3 text-left text-sm font-medium">操作</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y">
-            {loading ? (
-              <tr>
-                <td colSpan={6} className="px-4 py-8 text-center">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-                </td>
+      <Card>
+        <div className="relative w-full overflow-auto">
+          <table className="w-full caption-bottom text-sm">
+            <thead className="[&_tr]:border-b">
+              <tr className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
+                <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">用户</th>
+                <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">ID</th>
+                <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">角色</th>
+                <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">积分余额</th>
+                <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">注册时间</th>
+                <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">操作</th>
               </tr>
-            ) : users.length === 0 ? (
-              <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
-                  暂无用户
-                </td>
-              </tr>
-            ) : (
-              users.map((user) => (
-                <tr key={user.id} className="hover:bg-muted/30">
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-3">
-                      {user.avatar ? (
-                        <img src={user.avatar} alt={user.username} className="w-8 h-8 rounded-full" />
-                      ) : (
-                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                          <span className="text-sm">{user.role === 'admin' ? '👑' : '👤'}</span>
-                        </div>
-                      )}
-                      <span className="font-medium">{user.username}</span>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 text-sm text-muted-foreground">{user.linuxdo_id}</td>
-                  <td className="px-4 py-3">
-                    <span className={`text-xs px-2 py-1 rounded ${
-                      user.role === 'admin' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-700'
-                    }`}>
-                      {user.role === 'admin' ? '管理员' : '普通用户'}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className="font-medium text-primary">{user.balance}</span>
-                    <span className="text-sm text-muted-foreground ml-1">积分</span>
-                  </td>
-                  <td className="px-4 py-3 text-sm text-muted-foreground">
-                    {formatDate(user.created_at)}
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => openPointsModal(user)}
-                        className="text-sm text-primary hover:underline"
-                      >
-                        调整积分
-                      </button>
-                      <button
-                        onClick={() => openRoleModal(user)}
-                        className="text-sm text-blue-600 hover:underline"
-                      >
-                        修改角色
-                      </button>
-                    </div>
+            </thead>
+            <tbody className="[&_tr:last-child]:border-0">
+              {loading ? (
+                <tr>
+                  <td colSpan={6} className="p-8 text-center">
+                    <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+              ) : users.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="p-8 text-center text-muted-foreground">
+                    暂无用户
+                  </td>
+                </tr>
+              ) : (
+                users.map((user) => (
+                  <tr key={user.id} className="border-b transition-colors hover:bg-muted/50">
+                    <td className="p-4 align-middle">
+                      <div className="flex items-center gap-3">
+                        {user.avatar ? (
+                          <img src={user.avatar} alt={user.username} className="w-8 h-8 rounded-full object-cover" />
+                        ) : (
+                          <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                            <User className="w-4 h-4" />
+                          </div>
+                        )}
+                        <span className="font-medium">{user.username}</span>
+                      </div>
+                    </td>
+                    <td className="p-4 align-middle text-muted-foreground font-mono text-xs">{user.id}</td>
+                    <td className="p-4 align-middle">
+                      <Badge variant={user.role === 'admin' ? "default" : "secondary"} className={cn(user.role === 'admin' && "bg-yellow-600 hover:bg-yellow-700")}>
+                        {user.role === 'admin' ? '管理员' : '普通用户'}
+                      </Badge>
+                    </td>
+                    <td className="p-4 align-middle">
+                      <span className="font-bold text-primary">{user.balance}</span>
+                      <span className="text-xs text-muted-foreground ml-1">积分</span>
+                    </td>
+                    <td className="p-4 align-middle text-muted-foreground">
+                      {formatDate(user.created_at)}
+                    </td>
+                    <td className="p-4 align-middle">
+                      <div className="flex items-center gap-2">
+                        <Button variant="outline" size="sm" onClick={() => openPointsModal(user)}>
+                          <Coins className="w-4 h-4 mr-1" /> 积分
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={() => openRoleModal(user)}>
+                          <Shield className="w-4 h-4 mr-1" /> 角色
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </Card>
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">
-            共 {total} 个用户，第 {page} / {totalPages} 页
-          </p>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => handlePageChange(page - 1)}
-              disabled={page <= 1}
-              className="px-4 py-2 border rounded-lg hover:bg-muted disabled:opacity-50"
-            >
-              上一页
-            </button>
-            <button
-              onClick={() => handlePageChange(page + 1)}
-              disabled={page >= totalPages}
-              className="px-4 py-2 border rounded-lg hover:bg-muted disabled:opacity-50"
-            >
-              下一页
-            </button>
+        <div className="flex items-center justify-center gap-4 pt-4">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => handlePageChange(page - 1)}
+            disabled={page <= 1}
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </Button>
+          <div className="flex flex-col items-center">
+            <span className="text-sm text-muted-foreground">
+              {page} / {totalPages}
+            </span>
+            <span className="text-xs text-muted-foreground mt-1">
+              共 {total} 个用户
+            </span>
           </div>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => handlePageChange(page + 1)}
+            disabled={page >= totalPages}
+          >
+            <ChevronRight className="w-4 h-4" />
+          </Button>
         </div>
       )}
 
       {/* Adjust Points Modal */}
       {showPointsModal && selectedUser && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-card rounded-xl p-6 max-w-md w-full mx-4 shadow-xl">
-            <h2 className="text-xl font-bold mb-4">调整积分</h2>
-            
-            <div className="mb-4 p-3 bg-muted/50 rounded-lg">
-              <div className="flex items-center gap-3">
-                {selectedUser.avatar ? (
-                  <img src={selectedUser.avatar} alt={selectedUser.username} className="w-10 h-10 rounded-full" />
-                ) : (
-                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">👤</div>
-                )}
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <Card className="w-full max-w-md shadow-xl">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle>调整积分</CardTitle>
+              <Button variant="ghost" size="icon" onClick={() => { setShowPointsModal(false); resetPointsForm(); }}>
+                <X className="w-4 h-4" />
+              </Button>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
+                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                  <User className="w-5 h-5" />
+                </div>
                 <div>
                   <p className="font-medium">{selectedUser.username}</p>
                   <p className="text-sm text-muted-foreground">当前余额: {selectedUser.balance} 积分</p>
                 </div>
               </div>
-            </div>
 
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-1">调整数量</label>
-                <input
+              <div className="space-y-2">
+                <label className="text-sm font-medium">调整数量</label>
+                <Input
                   type="number"
                   value={pointsAmount}
                   onChange={(e) => setPointsAmount(parseInt(e.target.value) || 0)}
-                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20"
                   placeholder="正数增加，负数扣除"
                 />
-                <p className="text-xs text-muted-foreground mt-1">
+                <p className="text-xs text-muted-foreground">
                   调整后余额: {selectedUser.balance + pointsAmount} 积分
                 </p>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium mb-1">备注（可选）</label>
-                <input
-                  type="text"
+              <div className="space-y-2">
+                <label className="text-sm font-medium">备注（可选）</label>
+                <Input
                   value={pointsDescription}
                   onChange={(e) => setPointsDescription(e.target.value)}
-                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20"
                   placeholder="调整原因..."
                 />
               </div>
-            </div>
 
-            <div className="flex gap-3 mt-6">
-              <button
-                onClick={() => { setShowPointsModal(false); resetPointsForm(); }}
-                className="flex-1 px-4 py-2 border rounded-lg hover:bg-muted"
-                disabled={submitting}
-              >
-                取消
-              </button>
-              <button
-                onClick={handleAdjustPoints}
-                disabled={submitting || pointsAmount === 0 || (selectedUser.balance + pointsAmount) < 0}
-                className="flex-1 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90 disabled:opacity-50"
-              >
-                {submitting ? '处理中...' : '确认调整'}
-              </button>
-            </div>
-          </div>
+              <div className="flex justify-end gap-2 pt-4">
+                <Button variant="outline" onClick={() => { setShowPointsModal(false); resetPointsForm(); }} disabled={submitting}>
+                  取消
+                </Button>
+                <Button 
+                  onClick={handleAdjustPoints} 
+                  disabled={submitting || pointsAmount === 0 || (selectedUser.balance + pointsAmount) < 0}
+                >
+                  {submitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                  确认调整
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       )}
 
       {/* Update Role Modal */}
       {showRoleModal && selectedUser && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-card rounded-xl p-6 max-w-md w-full mx-4 shadow-xl">
-            <h2 className="text-xl font-bold mb-4">修改角色</h2>
-            
-            <div className="mb-4 p-3 bg-muted/50 rounded-lg">
-              <div className="flex items-center gap-3">
-                {selectedUser.avatar ? (
-                  <img src={selectedUser.avatar} alt={selectedUser.username} className="w-10 h-10 rounded-full" />
-                ) : (
-                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">👤</div>
-                )}
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <Card className="w-full max-w-md shadow-xl">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle>修改角色</CardTitle>
+              <Button variant="ghost" size="icon" onClick={() => { setShowRoleModal(false); setSelectedUser(null); setNewRole(''); }}>
+                <X className="w-4 h-4" />
+              </Button>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
+                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                  <User className="w-5 h-5" />
+                </div>
                 <div>
                   <p className="font-medium">{selectedUser.username}</p>
                   <p className="text-sm text-muted-foreground">
@@ -353,59 +353,61 @@ export function AdminUsers() {
                   </p>
                 </div>
               </div>
-            </div>
 
-            <div>
-              <label className="block text-sm font-medium mb-2">选择新角色</label>
               <div className="space-y-2">
-                <label className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-muted/50">
-                  <input
-                    type="radio"
-                    name="role"
-                    value="user"
-                    checked={newRole === 'user'}
-                    onChange={(e) => setNewRole(e.target.value)}
-                    className="w-4 h-4"
-                  />
-                  <div>
-                    <p className="font-medium">普通用户</p>
-                    <p className="text-sm text-muted-foreground">只能访问前台功能</p>
-                  </div>
-                </label>
-                <label className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-muted/50">
-                  <input
-                    type="radio"
-                    name="role"
-                    value="admin"
-                    checked={newRole === 'admin'}
-                    onChange={(e) => setNewRole(e.target.value)}
-                    className="w-4 h-4"
-                  />
-                  <div>
-                    <p className="font-medium">管理员</p>
-                    <p className="text-sm text-muted-foreground">可以访问管理后台</p>
-                  </div>
-                </label>
+                <label className="text-sm font-medium">选择新角色</label>
+                <div className="grid gap-2">
+                  <label className={cn(
+                    "flex items-center gap-3 p-3 border rounded-lg cursor-pointer transition-colors hover:bg-muted/50",
+                    newRole === 'user' && "border-primary bg-primary/5"
+                  )}>
+                    <input
+                      type="radio"
+                      name="role"
+                      value="user"
+                      checked={newRole === 'user'}
+                      onChange={(e) => setNewRole(e.target.value)}
+                      className="sr-only"
+                    />
+                    <div>
+                      <p className="font-medium">普通用户</p>
+                      <p className="text-xs text-muted-foreground">只能访问前台功能</p>
+                    </div>
+                  </label>
+                  <label className={cn(
+                    "flex items-center gap-3 p-3 border rounded-lg cursor-pointer transition-colors hover:bg-muted/50",
+                    newRole === 'admin' && "border-primary bg-primary/5"
+                  )}>
+                    <input
+                      type="radio"
+                      name="role"
+                      value="admin"
+                      checked={newRole === 'admin'}
+                      onChange={(e) => setNewRole(e.target.value)}
+                      className="sr-only"
+                    />
+                    <div>
+                      <p className="font-medium">管理员</p>
+                      <p className="text-xs text-muted-foreground">可以访问管理后台</p>
+                    </div>
+                  </label>
+                </div>
               </div>
-            </div>
 
-            <div className="flex gap-3 mt-6">
-              <button
-                onClick={() => { setShowRoleModal(false); setSelectedUser(null); setNewRole(''); }}
-                className="flex-1 px-4 py-2 border rounded-lg hover:bg-muted"
-                disabled={submitting}
-              >
-                取消
-              </button>
-              <button
-                onClick={handleUpdateRole}
-                disabled={submitting || newRole === selectedUser.role}
-                className="flex-1 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90 disabled:opacity-50"
-              >
-                {submitting ? '处理中...' : '确认修改'}
-              </button>
-            </div>
-          </div>
+              <div className="flex justify-end gap-2 pt-4">
+                <Button variant="outline" onClick={() => { setShowRoleModal(false); setSelectedUser(null); setNewRole(''); }} disabled={submitting}>
+                  取消
+                </Button>
+                <Button 
+                  onClick={handleUpdateRole} 
+                  disabled={submitting || newRole === selectedUser.role}
+                >
+                  {submitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                  确认修改
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       )}
     </div>

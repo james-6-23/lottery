@@ -27,17 +27,18 @@ var (
 
 const (
 	linuxdoAuthorizeURL = "https://connect.linux.do/oauth2/authorize"
-	linuxdoTokenURL     = "https://connect.linux.do/oauth2/token"
-	linuxdoUserInfoURL  = "https://connect.linux.do/api/user"
+	linuxdoTokenURL     = "https://connect.linuxdo.org/oauth2/token"
+	linuxdoUserInfoURL  = "https://connect.linuxdo.org/api/user"
 )
 
 // LinuxdoUserInfo represents the user info from Linux.do
 type LinuxdoUserInfo struct {
-	ID       int    `json:"id"`
-	Username string `json:"username"`
-	Name     string `json:"name"`
-	Avatar   string `json:"avatar_url"`
-	Email    string `json:"email"`
+	ID             int    `json:"id"`
+	Username       string `json:"username"`
+	Name           string `json:"name"`
+	AvatarURL      string `json:"avatar_url"`
+	AvatarTemplate string `json:"avatar_template"` // Linux.do 返回的头像模板，需要替换 {size}
+	Email          string `json:"email"`
 }
 
 // OAuthService handles OAuth2 authentication
@@ -209,6 +210,9 @@ func (s *OAuthService) getUserInfo(accessToken string) (*LinuxdoUserInfo, error)
 func (s *OAuthService) findOrCreateUser(userInfo *LinuxdoUserInfo) (*model.User, error) {
 	linuxdoID := fmt.Sprintf("%d", userInfo.ID)
 	
+	// 处理头像 URL
+	avatarURL := s.processAvatarURL(userInfo)
+	
 	var user model.User
 	err := s.db.Where("linuxdo_id = ?", linuxdoID).First(&user).Error
 
@@ -222,7 +226,7 @@ func (s *OAuthService) findOrCreateUser(userInfo *LinuxdoUserInfo) (*model.User,
 		user = model.User{
 			LinuxdoID: linuxdoID,
 			Username:  displayName,
-			Avatar:    userInfo.Avatar,
+			Avatar:    avatarURL,
 			Role:      "user",
 		}
 		if err := s.db.Create(&user).Error; err != nil {
@@ -262,9 +266,9 @@ func (s *OAuthService) findOrCreateUser(userInfo *LinuxdoUserInfo) (*model.User,
 			displayName = userInfo.Username
 		}
 
-		if user.Username != displayName || user.Avatar != userInfo.Avatar {
+		if user.Username != displayName || user.Avatar != avatarURL {
 			user.Username = displayName
-			user.Avatar = userInfo.Avatar
+			user.Avatar = avatarURL
 			if err := s.db.Save(&user).Error; err != nil {
 				return nil, err
 			}
@@ -277,6 +281,21 @@ func (s *OAuthService) findOrCreateUser(userInfo *LinuxdoUserInfo) (*model.User,
 	}
 
 	return &user, nil
+}
+
+// processAvatarURL 处理头像 URL，优先使用 avatar_template
+func (s *OAuthService) processAvatarURL(userInfo *LinuxdoUserInfo) string {
+	// 优先使用 avatar_template（Linux.do 返回的标准格式）
+	if userInfo.AvatarTemplate != "" {
+		avatarURL := strings.Replace(userInfo.AvatarTemplate, "{size}", "120", 1)
+		// 如果是相对路径，添加 linux.do 域名
+		if strings.HasPrefix(avatarURL, "/") {
+			avatarURL = "https://linux.do" + avatarURL
+		}
+		return avatarURL
+	}
+	// 回退到 avatar_url
+	return userInfo.AvatarURL
 }
 
 // IsEnabled returns whether OAuth is enabled
