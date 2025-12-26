@@ -67,7 +67,7 @@ func (s *OAuthService) GetAuthorizationURL(state string) (string, error) {
 	}
 
 	// Store state in cache for validation
-	s.stateCache.Set("oauth_state:"+state, true, 600) // 10 minutes
+	_ = s.stateCache.Set("oauth_state:"+state, true, 600) // 10 minutes
 
 	params := url.Values{}
 	params.Set("client_id", s.cfg.LinuxdoClientID)
@@ -89,7 +89,7 @@ func (s *OAuthService) HandleCallback(code, state string) (*AuthResponse, error)
 	if !s.stateCache.Exists("oauth_state:" + state) {
 		return nil, ErrOAuthStateMismatch
 	}
-	s.stateCache.Delete("oauth_state:" + state)
+	_ = s.stateCache.Delete("oauth_state:" + state)
 
 	// Exchange code for token
 	accessToken, err := s.exchangeCodeForToken(code)

@@ -24,7 +24,7 @@ func NewOAuthHandler(oauthService *service.OAuthService) *OAuthHandler {
 // generateState generates a random state string for OAuth
 func generateState() string {
 	bytes := make([]byte, 16)
-	rand.Read(bytes)
+	_, _ = rand.Read(bytes)
 	return hex.EncodeToString(bytes)
 }
 

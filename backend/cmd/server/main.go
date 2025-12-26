@@ -27,7 +27,9 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to initialize database: %v", err)
 	}
-	defer repository.CloseDB()
+	defer func() {
+		_ = repository.CloseDB()
+	}()
 
 	// Run migrations
 	if err := repository.AutoMigrate(db); err != nil {
