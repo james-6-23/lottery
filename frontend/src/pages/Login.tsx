@@ -83,8 +83,9 @@ export function Login() {
   };
 
   const handleOAuthLogin = () => {
-    // Redirect to OAuth endpoint
-    window.location.href = `${import.meta.env.VITE_API_URL || 'http://localhost:8080/api'}/auth/oauth/linuxdo`;
+    // Redirect to OAuth endpoint - 使用相对路径
+    const apiBase = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:8080/api' : '/api');
+    window.location.href = `${apiBase}/auth/oauth/linuxdo`;
   };
 
   if (loading) {
