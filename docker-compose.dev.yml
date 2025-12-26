@@ -1,0 +1,58 @@
+version: '3.8'
+
+# Development Docker Compose configuration
+# Uses SQLite and memory cache for simpler local development
+
+services:
+  # Frontend service (React + Nginx)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: lottery-frontend-dev
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - lottery-network-dev
+
+  # Backend service (Go + Gin) with SQLite
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: lottery-backend-dev
+    ports:
+      - "8080:8080"
+    environment:
+      # Server
+      - SERVER_PORT=8080
+      - SERVER_HOST=0.0.0.0
+      # Database (SQLite)
+      - DB_DRIVER=sqlite
+      - DB_PATH=/app/data/lottery.db
+      # JWT
+      - JWT_SECRET=dev-secret-key
+      - JWT_ACCESS_EXPIRY=60
+      - JWT_REFRESH_EXPIRY=30
+      # OAuth (dev mode)
+      - OAUTH_MODE=dev
+      # Cache (memory)
+      - CACHE_DRIVER=memory
+      # Payment (disabled)
+      - PAYMENT_ENABLED=false
+      # Encryption
+      - ENCRYPTION_KEY=32-byte-key-for-aes-encryption!
+    volumes:
+      - backend_data:/app/data
+    networks:
+      - lottery-network-dev
+
+networks:
+  lottery-network-dev:
+    driver: bridge
+
+volumes:
+  backend_data:
+    driver: local
