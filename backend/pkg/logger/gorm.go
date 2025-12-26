@@ -2,7 +2,6 @@ package logger
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"gorm.io/gorm/logger"
@@ -123,15 +122,4 @@ func (l *SimpleSQLLogger) Trace(ctx context.Context, begin time.Time, fc func() 
 	} else {
 		l.log.Debug("%s | rows=%d | %v", truncateSQL(sql), rows, elapsed)
 	}
-}
-
-// Format elapsed time nicely
-func formatElapsed(d time.Duration) string {
-	if d < time.Millisecond {
-		return fmt.Sprintf("%.2fµs", float64(d.Microseconds()))
-	}
-	if d < time.Second {
-		return fmt.Sprintf("%.2fms", float64(d.Milliseconds()))
-	}
-	return fmt.Sprintf("%.2fs", d.Seconds())
 }
