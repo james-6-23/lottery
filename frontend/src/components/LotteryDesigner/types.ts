@@ -104,7 +104,7 @@ export const PRESET_THEMES: LotteryTheme[] = [
 export interface LotterySymbol {
   id: string;
   name: string;
-  emoji: string;
+  icon: string; // Heroicon name
   imageUrl?: string;
   prizeMultiplier: number;
   isSpecial: boolean;
@@ -113,16 +113,16 @@ export interface LotterySymbol {
 
 // 预设符号库
 export const PRESET_SYMBOLS: LotterySymbol[] = [
-  { id: 'seven', name: '幸运7', emoji: '7️⃣', prizeMultiplier: 10, isSpecial: false, color: '#ef4444' },
-  { id: 'diamond', name: '钻石', emoji: '💎', prizeMultiplier: 5, isSpecial: false, color: '#3b82f6' },
-  { id: 'star', name: '星星', emoji: '⭐', prizeMultiplier: 3, isSpecial: false, color: '#eab308' },
-  { id: 'cherry', name: '樱桃', emoji: '🍒', prizeMultiplier: 2, isSpecial: false, color: '#dc2626' },
-  { id: 'bell', name: '铃铛', emoji: '🔔', prizeMultiplier: 2, isSpecial: false, color: '#f59e0b' },
-  { id: 'clover', name: '四叶草', emoji: '🍀', prizeMultiplier: 1.5, isSpecial: false, color: '#22c55e' },
-  { id: 'coin', name: '金币', emoji: '🪙', prizeMultiplier: 1, isSpecial: false, color: '#fbbf24' },
-  { id: 'crown', name: '皇冠', emoji: '👑', prizeMultiplier: 20, isSpecial: true, color: '#fbbf24' },
-  { id: 'treasure', name: '宝箱', emoji: '💰', prizeMultiplier: 15, isSpecial: true, color: '#f59e0b' },
-  { id: 'rainbow', name: '彩虹', emoji: '🌈', prizeMultiplier: 0, isSpecial: true, color: '#ec4899' },
+  { id: 'seven', name: '幸运7', icon: 'SparklesIcon', prizeMultiplier: 10, isSpecial: false, color: '#ef4444' },
+  { id: 'diamond', name: '钻石', icon: 'DiamondIcon', prizeMultiplier: 5, isSpecial: false, color: '#3b82f6' }, // Note: Diamond might not exist in outline/solid uniformly, using basic shapes or mapped later
+  { id: 'star', name: '星星', icon: 'StarIcon', prizeMultiplier: 3, isSpecial: false, color: '#eab308' },
+  { id: 'cherry', name: '樱桃', icon: 'HeartIcon', prizeMultiplier: 2, isSpecial: false, color: '#dc2626' }, // Fallback to Heart or similar if Cherry not exact
+  { id: 'bell', name: '铃铛', icon: 'BellIcon', prizeMultiplier: 2, isSpecial: false, color: '#f59e0b' },
+  { id: 'clover', name: '四叶草', icon: 'SunIcon', prizeMultiplier: 1.5, isSpecial: false, color: '#22c55e' }, // Fallback
+  { id: 'coin', name: '金币', icon: 'CurrencyDollarIcon', prizeMultiplier: 1, isSpecial: false, color: '#fbbf24' },
+  { id: 'crown', name: '皇冠', icon: 'TrophyIcon', prizeMultiplier: 20, isSpecial: true, color: '#fbbf24' },
+  { id: 'treasure', name: '宝箱', icon: 'ArchiveBoxIcon', prizeMultiplier: 15, isSpecial: true, color: '#f59e0b' },
+  { id: 'rainbow', name: '彩虹', icon: 'CloudIcon', prizeMultiplier: 0, isSpecial: true, color: '#ec4899' },
 ];
 
 // 彩票配置
@@ -132,30 +132,30 @@ export interface LotteryConfig {
   description: string;
   price: number;
   maxPrize: number;
-  
+
   // 布局设置
   layout: LayoutType;
   rows: number;
   cols: number;
   cellSize: number;
   cellGap: number;
-  
+
   // 主题
   theme: LotteryTheme;
-  
+
   // 符号配置
   symbols: LotterySymbol[];
   specialSymbols: LotterySymbol[];
-  
+
   // 游戏规则
   winCondition: 'match-3' | 'match-any' | 'sum' | 'multiplier';
   matchCount: number;
-  
+
   // 刮奖设置
   scratchBrushSize: number;
   revealThreshold: number;
   enableAutoReveal: boolean;
-  
+
   // 动效设置
   enableConfetti: boolean;
   enableGlow: boolean;
@@ -168,25 +168,25 @@ export const DEFAULT_CONFIG: LotteryConfig = {
   description: '刮出3个相同符号即可中奖！',
   price: 10,
   maxPrize: 10000,
-  
+
   layout: 'grid-3x4',
   rows: 3,
   cols: 4,
   cellSize: 70,
   cellGap: 8,
-  
+
   theme: PRESET_THEMES[0],
-  
+
   symbols: PRESET_SYMBOLS.filter(s => !s.isSpecial).slice(0, 6),
   specialSymbols: PRESET_SYMBOLS.filter(s => s.isSpecial).slice(0, 2),
-  
+
   winCondition: 'match-3',
   matchCount: 3,
-  
+
   scratchBrushSize: 30,
   revealThreshold: 60,
   enableAutoReveal: true,
-  
+
   enableConfetti: true,
   enableGlow: true,
   enableSound: false,

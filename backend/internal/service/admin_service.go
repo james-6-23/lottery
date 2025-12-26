@@ -1322,15 +1322,14 @@ func (s *AdminService) getUserBehaviorStats() (*UserBehaviorStats, error) {
 
 // getDateFormat returns the SQL date format based on period
 func (s *AdminService) getDateFormat(period string) string {
-	// SQLite uses strftime, PostgreSQL uses to_char
-	// For simplicity, we'll use a format that works with both
+	// PostgreSQL uses to_char for date formatting
 	switch period {
 	case "week":
-		return "strftime('%Y-W%W', created_at)"
+		return "to_char(created_at, 'IYYY-\"W\"IW')"
 	case "month":
-		return "strftime('%Y-%m', created_at)"
+		return "to_char(created_at, 'YYYY-MM')"
 	default:
-		return "strftime('%m-%d', created_at)"
+		return "to_char(created_at, 'MM-DD')"
 	}
 }
 

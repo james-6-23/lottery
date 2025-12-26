@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import type { LotteryConfig, LotteryTheme, LotterySymbol, LayoutType } from './types';
 import { PRESET_THEMES, PRESET_SYMBOLS, DEFAULT_CONFIG } from './types';
+import { UI_ICONS, ICON_MAP } from './icons';
+import { QuestionMarkCircleIcon } from '@heroicons/react/24/solid';
 
 interface DesignerPanelProps {
   config: LotteryConfig;
@@ -9,12 +11,12 @@ interface DesignerPanelProps {
 
 type TabType = 'basic' | 'layout' | 'theme' | 'symbols' | 'effects';
 
-const TABS: { id: TabType; label: string; icon: string }[] = [
-  { id: 'basic', label: '基本信息', icon: '📝' },
-  { id: 'layout', label: '布局设置', icon: '📐' },
-  { id: 'theme', label: '主题样式', icon: '🎨' },
-  { id: 'symbols', label: '符号配置', icon: '🎰' },
-  { id: 'effects', label: '特效设置', icon: '✨' },
+const TABS: { id: TabType; label: string; Icon: React.ElementType }[] = [
+  { id: 'basic', label: '基本信息', Icon: UI_ICONS.Basic },
+  { id: 'layout', label: '布局设置', Icon: UI_ICONS.Layout },
+  { id: 'theme', label: '主题样式', Icon: UI_ICONS.Theme },
+  { id: 'symbols', label: '符号配置', Icon: UI_ICONS.Symbols },
+  { id: 'effects', label: '特效设置', Icon: UI_ICONS.Effects },
 ];
 
 const LAYOUT_OPTIONS: { value: LayoutType; label: string; rows: number; cols: number }[] = [
@@ -78,7 +80,7 @@ export function DesignerPanel({ config, onChange }: DesignerPanelProps) {
             className={`tab-btn ${activeTab === tab.id ? 'active' : ''}`}
             onClick={() => setActiveTab(tab.id)}
           >
-            <span className="tab-icon">{tab.icon}</span>
+            <tab.Icon className="tab-icon h-5 w-5" />
             <span className="tab-label">{tab.label}</span>
           </button>
         ))}
@@ -90,8 +92,8 @@ export function DesignerPanel({ config, onChange }: DesignerPanelProps) {
           <BasicTab config={config} updateConfig={updateConfig} />
         )}
         {activeTab === 'layout' && (
-          <LayoutTab 
-            config={config} 
+          <LayoutTab
+            config={config}
             updateConfig={updateConfig}
             onLayoutChange={handleLayoutChange}
           />
@@ -100,7 +102,7 @@ export function DesignerPanel({ config, onChange }: DesignerPanelProps) {
           <ThemeTab config={config} updateConfig={updateConfig} />
         )}
         {activeTab === 'symbols' && (
-          <SymbolsTab 
+          <SymbolsTab
             config={config}
             onToggleSymbol={toggleSymbol}
             onToggleSpecialSymbol={toggleSpecialSymbol}
@@ -113,8 +115,8 @@ export function DesignerPanel({ config, onChange }: DesignerPanelProps) {
 
       {/* 底部操作 */}
       <div className="panel-footer">
-        <button className="btn-reset" onClick={resetToDefault}>
-          🔄 重置默认
+        <button className="btn-reset flex items-center gap-2" onClick={resetToDefault}>
+          <UI_ICONS.Reset className="h-4 w-4" /> 重置默认
         </button>
       </div>
 
@@ -272,11 +274,11 @@ export function DesignerPanel({ config, onChange }: DesignerPanelProps) {
 
 
 // 基本信息标签页
-function BasicTab({ 
-  config, 
-  updateConfig 
-}: { 
-  config: LotteryConfig; 
+function BasicTab({
+  config,
+  updateConfig
+}: {
+  config: LotteryConfig;
   updateConfig: <K extends keyof LotteryConfig>(key: K, value: LotteryConfig[K]) => void;
 }) {
   return (
@@ -327,7 +329,7 @@ function BasicTab({
 
       <div className="divider" />
 
-      <div className="section-title">🎮 游戏规则</div>
+      <div className="section-title"><UI_ICONS.Game className="h-4 w-4" /> 游戏规则</div>
 
       <div className="form-group">
         <label className="form-label">中奖条件</label>
@@ -371,19 +373,19 @@ function BasicTab({
 }
 
 // 布局设置标签页
-function LayoutTab({ 
-  config, 
+function LayoutTab({
+  config,
   updateConfig,
   onLayoutChange
-}: { 
-  config: LotteryConfig; 
+}: {
+  config: LotteryConfig;
   updateConfig: <K extends keyof LotteryConfig>(key: K, value: LotteryConfig[K]) => void;
   onLayoutChange: (layout: LayoutType) => void;
 }) {
   return (
     <div className="layout-tab">
-      <div className="section-title">📐 布局模板</div>
-      
+      <div className="section-title"><UI_ICONS.Layout className="h-4 w-4" /> 布局模板</div>
+
       <div className="layout-grid">
         {LAYOUT_OPTIONS.map(option => (
           <button
@@ -404,7 +406,7 @@ function LayoutTab({
       {config.layout === 'custom' && (
         <>
           <div className="divider" />
-          <div className="section-title">⚙️ 自定义尺寸</div>
+          <div className="section-title"><UI_ICONS.Customize className="h-4 w-4" /> 自定义尺寸</div>
           <div className="form-row">
             <div className="form-group">
               <label className="form-label">行数</label>
@@ -433,7 +435,7 @@ function LayoutTab({
       )}
 
       <div className="divider" />
-      <div className="section-title">📏 单元格设置</div>
+      <div className="section-title"><UI_ICONS.Layout className="h-4 w-4" /> 单元格设置</div>
 
       <div className="form-row">
         <div className="form-group">
@@ -549,11 +551,11 @@ function LayoutTab({
 
 
 // 主题样式标签页
-function ThemeTab({ 
-  config, 
-  updateConfig 
-}: { 
-  config: LotteryConfig; 
+function ThemeTab({
+  config,
+  updateConfig
+}: {
+  config: LotteryConfig;
   updateConfig: <K extends keyof LotteryConfig>(key: K, value: LotteryConfig[K]) => void;
 }) {
   const [customizing, setCustomizing] = useState(false);
@@ -569,8 +571,8 @@ function ThemeTab({
 
   return (
     <div className="theme-tab">
-      <div className="section-title">🎨 预设主题</div>
-      
+      <div className="section-title"><UI_ICONS.Theme className="h-4 w-4" /> 预设主题</div>
+
       <div className="theme-grid">
         {PRESET_THEMES.map(theme => (
           <button
@@ -578,24 +580,24 @@ function ThemeTab({
             className={`theme-card ${config.theme.id === theme.id ? 'active' : ''}`}
             onClick={() => selectTheme(theme)}
           >
-            <div 
+            <div
               className="theme-preview"
               style={{ background: theme.ticketBackground }}
             >
-              <div 
+              <div
                 className="theme-header"
                 style={{ background: theme.headerGradient }}
               />
               <div className="theme-cells">
-                <div 
+                <div
                   className="theme-cell"
                   style={{ background: theme.cellBackground }}
                 />
-                <div 
+                <div
                   className="theme-cell win"
                   style={{ background: theme.cellWinBackground }}
                 />
-                <div 
+                <div
                   className="theme-cell"
                   style={{ background: theme.cellBackground }}
                 />
@@ -608,11 +610,11 @@ function ThemeTab({
 
       <div className="divider" />
 
-      <button 
+      <button
         className={`customize-btn ${customizing ? 'active' : ''}`}
         onClick={() => setCustomizing(!customizing)}
       >
-        <span>🛠️ 自定义主题</span>
+        <span className="flex items-center gap-2"><UI_ICONS.Customize className="h-4 w-4" /> 自定义主题</span>
         <span className="arrow">{customizing ? '▲' : '▼'}</span>
       </button>
 
@@ -627,12 +629,12 @@ function ThemeTab({
                   className={`scratch-type-btn ${config.theme.scratchLayerType === type ? 'active' : ''}`}
                   onClick={() => updateTheme('scratchLayerType', type)}
                 >
-                  <div 
+                  <div
                     className="scratch-preview"
-                    style={{ 
+                    style={{
                       background: type === 'silver' ? '#c0c0c0' :
-                                  type === 'gold' ? '#d4af37' :
-                                  type === 'bronze' ? '#cd7f32' : '#8b5cf6'
+                        type === 'gold' ? '#d4af37' :
+                          type === 'bronze' ? '#cd7f32' : '#8b5cf6'
                     }}
                   />
                   <span>{type === 'silver' ? '银色' : type === 'gold' ? '金色' : type === 'bronze' ? '铜色' : '自定义'}</span>
@@ -888,11 +890,11 @@ function ThemeTab({
 
 
 // 符号配置标签页
-function SymbolsTab({ 
+function SymbolsTab({
   config,
   onToggleSymbol,
   onToggleSpecialSymbol
-}: { 
+}: {
   config: LotteryConfig;
   onToggleSymbol: (symbol: LotterySymbol) => void;
   onToggleSpecialSymbol: (symbol: LotterySymbol) => void;
@@ -902,24 +904,27 @@ function SymbolsTab({
 
   return (
     <div className="symbols-tab">
-      <div className="section-title">🎰 普通符号</div>
+      <div className="section-title"><UI_ICONS.Symbols className="h-4 w-4" /> 普通符号</div>
       <div className="form-hint" style={{ marginTop: '-12px', marginBottom: '12px' }}>
         选择至少3个符号用于生成彩票
       </div>
-      
+
       <div className="symbols-grid">
         {normalSymbols.map(symbol => {
           const isSelected = config.symbols.some(s => s.id === symbol.id);
+          const IconComponent = ICON_MAP[symbol.icon] || QuestionMarkCircleIcon;
           return (
             <button
               key={symbol.id}
               className={`symbol-card ${isSelected ? 'active' : ''}`}
               onClick={() => onToggleSymbol(symbol)}
             >
-              <span className="symbol-emoji">{symbol.emoji}</span>
+              <div className="symbol-icon-wrapper p-2">
+                <IconComponent className="h-8 w-8" style={{ color: symbol.color }} />
+              </div>
               <span className="symbol-name">{symbol.name}</span>
               <span className="symbol-multiplier">×{symbol.prizeMultiplier}</span>
-              {isSelected && <span className="check-mark">✓</span>}
+              {isSelected && <span className="check-mark"><UI_ICONS.Check className="h-3 w-3" /></span>}
             </button>
           );
         })}
@@ -931,7 +936,7 @@ function SymbolsTab({
 
       <div className="divider" />
 
-      <div className="section-title">⭐ 特殊符号</div>
+      <div className="section-title"><UI_ICONS.Effects className="h-4 w-4" /> 特殊符号</div>
       <div className="form-hint" style={{ marginTop: '-12px', marginBottom: '12px' }}>
         特殊符号可触发额外奖励或特殊效果
       </div>
@@ -939,18 +944,21 @@ function SymbolsTab({
       <div className="symbols-grid special">
         {specialSymbols.map(symbol => {
           const isSelected = config.specialSymbols.some(s => s.id === symbol.id);
+          const IconComponent = ICON_MAP[symbol.icon] || QuestionMarkCircleIcon;
           return (
             <button
               key={symbol.id}
               className={`symbol-card special ${isSelected ? 'active' : ''}`}
               onClick={() => onToggleSpecialSymbol(symbol)}
             >
-              <span className="symbol-emoji">{symbol.emoji}</span>
+              <div className="symbol-icon-wrapper p-2">
+                <IconComponent className="h-8 w-8 animate-pulse" style={{ color: symbol.color }} />
+              </div>
               <span className="symbol-name">{symbol.name}</span>
               <span className="symbol-multiplier">
                 {symbol.prizeMultiplier > 0 ? `×${symbol.prizeMultiplier}` : '特殊'}
               </span>
-              {isSelected && <span className="check-mark">✓</span>}
+              {isSelected && <span className="check-mark"><UI_ICONS.Check className="h-3 w-3" /></span>}
             </button>
           );
         })}
@@ -1000,9 +1008,10 @@ function SymbolsTab({
           background: rgba(245, 158, 11, 0.1);
         }
 
-        .symbol-emoji {
-          font-size: 28px;
-          line-height: 1;
+        .symbol-icon-wrapper {
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
 
         .symbol-name {
@@ -1039,7 +1048,6 @@ function SymbolsTab({
           display: flex;
           align-items: center;
           justify-content: center;
-          font-size: 10px;
           color: white;
         }
 
@@ -1063,16 +1071,16 @@ function SymbolsTab({
 }
 
 // 特效设置标签页
-function EffectsTab({ 
-  config, 
-  updateConfig 
-}: { 
-  config: LotteryConfig; 
+function EffectsTab({
+  config,
+  updateConfig
+}: {
+  config: LotteryConfig;
   updateConfig: <K extends keyof LotteryConfig>(key: K, value: LotteryConfig[K]) => void;
 }) {
   return (
     <div className="effects-tab">
-      <div className="section-title">🖌️ 刮奖设置</div>
+      <div className="section-title"><UI_ICONS.Theme className="h-4 w-4" /> 刮奖设置</div>
 
       <div className="form-group">
         <label className="form-label">画笔大小</label>
@@ -1111,12 +1119,12 @@ function EffectsTab({
 
       <div className="divider" />
 
-      <div className="section-title">✨ 视觉特效</div>
+      <div className="section-title"><UI_ICONS.Effects className="h-4 w-4" /> 视觉特效</div>
 
       <div className="toggle-group">
         <label className="toggle-item">
           <div className="toggle-info">
-            <span className="toggle-icon">🎊</span>
+            <span className="toggle-icon"><UI_ICONS.Confetti className="h-5 w-5 text-purple-400" /></span>
             <div>
               <div className="toggle-label">中奖彩带</div>
               <div className="toggle-desc">中奖时显示彩带庆祝动画</div>
@@ -1133,7 +1141,7 @@ function EffectsTab({
 
         <label className="toggle-item">
           <div className="toggle-info">
-            <span className="toggle-icon">💫</span>
+            <span className="toggle-icon"><UI_ICONS.Glow className="h-5 w-5 text-yellow-400" /></span>
             <div>
               <div className="toggle-label">发光效果</div>
               <div className="toggle-desc">中奖格子显示发光动画</div>
@@ -1150,7 +1158,7 @@ function EffectsTab({
 
         <label className="toggle-item">
           <div className="toggle-info">
-            <span className="toggle-icon">🔊</span>
+            <span className="toggle-icon"><UI_ICONS.Sound className="h-5 w-5 text-green-400" /></span>
             <div>
               <div className="toggle-label">音效</div>
               <div className="toggle-desc">刮奖和中奖时播放音效</div>
@@ -1167,7 +1175,7 @@ function EffectsTab({
 
         <label className="toggle-item">
           <div className="toggle-info">
-            <span className="toggle-icon">🎬</span>
+            <span className="toggle-icon"><UI_ICONS.Auto className="h-5 w-5 text-blue-400" /></span>
             <div>
               <div className="toggle-label">自动揭示</div>
               <div className="toggle-desc">达到阈值后自动揭示剩余内容</div>

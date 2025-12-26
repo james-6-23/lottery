@@ -59,7 +59,7 @@ export function EnhancedScratchCard({
       customColor,
       watermarkText
     );
-    
+
     ctx.drawImage(coverCanvas, 0, 0);
   }, [width, height, scratchType, customColor, watermarkText, isRevealed]);
 
@@ -108,7 +108,7 @@ export function EnhancedScratchCard({
     }
 
     ctx.globalCompositeOperation = 'destination-out';
-    
+
     if (lastPointRef.current) {
       // 绘制平滑线条
       ctx.beginPath();
@@ -121,16 +121,16 @@ export function EnhancedScratchCard({
 
       // 添加边缘粗糙效果 (Dissolve)
       const distance = Math.sqrt(
-        Math.pow(x - lastPointRef.current.x, 2) + 
+        Math.pow(x - lastPointRef.current.x, 2) +
         Math.pow(y - lastPointRef.current.y, 2)
       );
       const steps = Math.max(1, Math.floor(distance / 5));
-      
+
       for (let i = 0; i < steps; i++) {
         const t = i / steps;
         const px = lastPointRef.current.x + (x - lastPointRef.current.x) * t;
         const py = lastPointRef.current.y + (y - lastPointRef.current.y) * t;
-        
+
         // 随机散点模拟粗糙边缘
         for (let j = 0; j < 3; j++) {
           const angle = Math.random() * Math.PI * 2;
@@ -138,7 +138,7 @@ export function EnhancedScratchCard({
           const dotX = px + Math.cos(angle) * radius;
           const dotY = py + Math.sin(angle) * radius;
           const dotSize = Math.random() * 4 + 2;
-          
+
           ctx.beginPath();
           ctx.arc(dotX, dotY, dotSize, 0, Math.PI * 2);
           ctx.fill();
@@ -166,7 +166,7 @@ export function EnhancedScratchCard({
     if (percentage >= revealThreshold && !isRevealed) {
       setIsRevealed(true);
       onReveal?.();
-      
+
       // 强震动反馈
       if (enableVibration && 'vibrate' in navigator) {
         navigator.vibrate([50, 30, 50]);
@@ -245,12 +245,12 @@ export function EnhancedScratchCard({
   }, [isRevealed, scratchPercentage, width, height]);
 
   return (
-    <div 
+    <div
       className={`relative select-none ${className}`}
       style={{ width, height }}
     >
       {/* 底层内容 */}
-      <div 
+      <div
         className="absolute inset-0 flex items-center justify-center overflow-hidden rounded-lg"
         style={{ width, height }}
       >
@@ -263,9 +263,8 @@ export function EnhancedScratchCard({
           ref={canvasRef}
           width={width}
           height={height}
-          className={`absolute inset-0 rounded-lg transition-opacity duration-300 ${
-            disabled ? 'cursor-not-allowed' : 'cursor-[url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'32\' height=\'32\' viewBox=\'0 0 24 24\'%3E%3Ctext y=\'20\' font-size=\'20\'%3E🪙%3C/text%3E%3C/svg%3E"),_pointer]'
-          }`}
+          className={`absolute inset-0 rounded-lg transition-opacity duration-300 ${disabled ? 'cursor-not-allowed' : 'cursor-[url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'24\' height=\'24\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'white\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3E%3Ccircle cx=\'12\' cy=\'12\' r=\'10\'/%3E%3Cpath d=\'M12 6v12M6 12h12\'/%3E%3C/svg%3E")_12_12,pointer]'
+            }`}
           onMouseDown={handleStart}
           onMouseMove={handleMove}
           onMouseUp={handleEnd}
@@ -281,7 +280,7 @@ export function EnhancedScratchCard({
       {!isRevealed && scratchPercentage > 0 && scratchPercentage < revealThreshold && (
         <div className="absolute bottom-1 left-1 right-1">
           <div className="h-1 bg-black/20 rounded-full overflow-hidden">
-            <div 
+            <div
               className="h-full bg-white/80 transition-all duration-100"
               style={{ width: `${(scratchPercentage / revealThreshold) * 100}%` }}
             />

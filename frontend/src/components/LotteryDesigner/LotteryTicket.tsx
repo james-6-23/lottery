@@ -1,7 +1,10 @@
+
 import { useState, useCallback, useMemo } from 'react';
 import { EnhancedScratchCard } from './EnhancedScratchCard';
 import { Confetti, GlowEffect } from './Confetti';
-import type { LotteryConfig, LotteryCell, LotteryTheme } from './types';
+import type { LotteryConfig, LotteryCell, LotteryTheme, LotterySymbol } from './types';
+import { ICON_MAP } from './icons';
+import { QuestionMarkCircleIcon } from '@heroicons/react/24/solid';
 
 interface LotteryTicketProps {
   config: LotteryConfig;
@@ -11,6 +14,7 @@ interface LotteryTicketProps {
   onAllRevealed?: (isWin: boolean, totalPrize: number) => void;
   disabled?: boolean;
   previewMode?: boolean;
+  interactive?: boolean;
 }
 
 export function LotteryTicket({
@@ -21,15 +25,22 @@ export function LotteryTicket({
   onAllRevealed,
   disabled = false,
   previewMode = false,
+  interactive = false,
 }: LotteryTicketProps) {
   const [revealedCells, setRevealedCells] = useState<Set<number>>(
-    previewMode ? new Set(cells.map((_, i) => i)) : new Set()
+    previewMode && !interactive ? new Set(cells.map((_, i) => i)) : new Set()
   );
   const [showConfetti, setShowConfetti] = useState(false);
   const [showGlow, setShowGlow] = useState(false);
   const [totalPrize, setTotalPrize] = useState(0);
 
-  const { theme, rows, cols, cellSize, cellGap } = config;
+  const { theme, cols, cellSize, cellGap } = config;
+
+  // Render helper for symbols
+  const renderSymbol = (symbol: LotterySymbol, className: string = "") => {
+    const IconComponent = ICON_MAP[symbol.icon] || QuestionMarkCircleIcon;
+    return <IconComponent className={className} style={{ color: symbol.color }} />;
+  };
 
   // 计算是否中奖
   const winResult = useMemo(() => {
@@ -83,14 +94,14 @@ export function LotteryTicket({
     // 检查是否全部揭示
     if (newRevealed.size === cells.length) {
       setTotalPrize(winResult.prize);
-      
+
       if (winResult.isWin && config.enableConfetti) {
         setShowConfetti(true);
       }
       if (winResult.isWin && config.enableGlow) {
         setShowGlow(true);
       }
-      
+
       onAllRevealed?.(winResult.isWin, winResult.prize);
     }
   }, [revealedCells, cells, winResult, config.enableConfetti, config.enableGlow, onCellRevealed, onAllRevealed]);
@@ -98,23 +109,23 @@ export function LotteryTicket({
   // 锯齿边缘样式
   const getSerratedStyle = (theme: LotteryTheme): React.CSSProperties => {
     if (theme.ticketBorderStyle !== 'serrated') return {};
-    
+
     return {
       maskImage: `
-        linear-gradient(135deg, transparent 5px, black 5px),
-        linear-gradient(-135deg, transparent 5px, black 5px),
-        linear-gradient(45deg, transparent 5px, black 5px),
-        linear-gradient(-45deg, transparent 5px, black 5px)
-      `,
+linear - gradient(135deg, transparent 5px, black 5px),
+  linear - gradient(-135deg, transparent 5px, black 5px),
+  linear - gradient(45deg, transparent 5px, black 5px),
+  linear - gradient(-45deg, transparent 5px, black 5px)
+    `,
       maskSize: '10px 100%, 10px 100%, 100% 10px, 100% 10px',
       maskPosition: 'left, right, top, bottom',
       maskRepeat: 'repeat-y, repeat-y, repeat-x, repeat-x',
       WebkitMaskImage: `
-        linear-gradient(135deg, transparent 5px, black 5px),
-        linear-gradient(-135deg, transparent 5px, black 5px),
-        linear-gradient(45deg, transparent 5px, black 5px),
-        linear-gradient(-45deg, transparent 5px, black 5px)
-      `,
+linear - gradient(135deg, transparent 5px, black 5px),
+  linear - gradient(-135deg, transparent 5px, black 5px),
+  linear - gradient(45deg, transparent 5px, black 5px),
+  linear - gradient(-45deg, transparent 5px, black 5px)
+    `,
       WebkitMaskSize: '10px 100%, 10px 100%, 100% 10px, 100% 10px',
       WebkitMaskPosition: 'left, right, top, bottom',
       WebkitMaskRepeat: 'repeat-y, repeat-y, repeat-x, repeat-x',
@@ -122,31 +133,28 @@ export function LotteryTicket({
   };
 
   const gridWidth = cols * cellSize + (cols - 1) * cellGap;
-  const gridHeight = rows * cellSize + (rows - 1) * cellGap;
   const ticketWidth = gridWidth + 48;
-  // ticketHeight 用于未来扩展
-  void (gridHeight + 160);
 
   const isAllRevealed = revealedCells.size === cells.length;
 
   return (
     <>
       {/* 彩带效果 */}
-      <Confetti 
-        active={showConfetti} 
+      <Confetti
+        active={showConfetti}
         onComplete={() => setShowConfetti(false)}
         duration={4000}
         particleCount={150}
       />
 
       {/* 彩票主体 */}
-      <div 
+      <div
         className="relative rounded-2xl overflow-hidden transition-transform duration-300 hover:scale-[1.02]"
         style={{
           width: ticketWidth,
           background: theme.ticketBackground,
-          border: theme.ticketBorderStyle !== 'serrated' 
-            ? `3px solid ${theme.ticketBorderColor}` 
+          border: theme.ticketBorderStyle !== 'serrated'
+            ? `3px solid ${theme.ticketBorderColor} `
             : 'none',
           boxShadow: theme.ticketShadow,
           ...getSerratedStyle(theme),
@@ -156,20 +164,20 @@ export function LotteryTicket({
         <GlowEffect active={showGlow} color={theme.ticketBorderColor} intensity={1.5} />
 
         {/* 头部区域 */}
-        <div 
+        <div
           className="px-4 py-3 text-center"
           style={{ background: theme.headerGradient }}
         >
-          <h2 
+          <h2
             className="text-xl font-bold tracking-wider"
-            style={{ 
+            style={{
               color: theme.headerTextColor,
               textShadow: '0 1px 2px rgba(0,0,0,0.1)',
             }}
           >
             ✨ {config.name} ✨
           </h2>
-          <div 
+          <div
             className="text-sm mt-1 opacity-80"
             style={{ color: theme.headerTextColor }}
           >
@@ -178,7 +186,7 @@ export function LotteryTicket({
         </div>
 
         {/* 彩票编号 */}
-        <div 
+        <div
           className="px-4 py-2 text-xs font-mono text-center"
           style={{ color: theme.labelTextColor }}
         >
@@ -187,7 +195,7 @@ export function LotteryTicket({
 
         {/* 中奖符号提示区 */}
         <div className="px-4 pb-2">
-          <div 
+          <div
             className="flex items-center justify-center gap-2 py-2 px-3 rounded-lg"
             style={{ background: 'rgba(255,255,255,0.1)' }}
           >
@@ -195,36 +203,32 @@ export function LotteryTicket({
               🏆 中奖符号:
             </span>
             {config.symbols.slice(0, 4).map(symbol => (
-              <span 
-                key={symbol.id} 
-                className="text-lg"
-                title={`${symbol.name} x${symbol.prizeMultiplier}`}
-              >
-                {symbol.emoji}
-              </span>
+              <div key={symbol.id} title={`${symbol.name} x${symbol.prizeMultiplier} `}>
+                {renderSymbol(symbol, "size-6")}
+              </div>
             ))}
             {config.specialSymbols.slice(0, 1).map(symbol => (
-              <span 
-                key={symbol.id} 
-                className="text-lg animate-pulse"
+              <div
+                key={symbol.id}
+                className="animate-pulse"
                 title={`${symbol.name} (特殊)`}
               >
-                {symbol.emoji}
-              </span>
+                {renderSymbol(symbol, "size-6")}
+              </div>
             ))}
           </div>
         </div>
 
         {/* 刮奖区域 */}
         <div className="px-4 py-3">
-          <div 
+          <div
             className="p-3 rounded-xl"
-            style={{ 
+            style={{
               background: 'rgba(0,0,0,0.3)',
               backdropFilter: 'blur(4px)',
             }}
           >
-            <div 
+            <div
               className="grid"
               style={{
                 gridTemplateColumns: `repeat(${cols}, ${cellSize}px)`,
@@ -232,8 +236,8 @@ export function LotteryTicket({
               }}
             >
               {cells.map((cell, index) => {
-                const isRevealed = revealedCells.has(index) || previewMode;
-                
+                const isRevealed = revealedCells.has(index) || (previewMode && !interactive);
+
                 return (
                   <div key={index} className="relative">
                     <EnhancedScratchCard
@@ -245,32 +249,32 @@ export function LotteryTicket({
                       revealThreshold={config.revealThreshold}
                       watermarkText=""
                       onReveal={() => handleCellRevealed(index)}
-                      disabled={disabled || isRevealed}
+                      disabled={(disabled && !interactive) || isRevealed}
                       revealed={isRevealed}
                       enableVibration={true}
                     >
                       {/* 单元格内容 */}
-                      <div 
+                      <div
                         className="w-full h-full flex flex-col items-center justify-center rounded-lg transition-all duration-300"
                         style={{
-                          background: cell.isSpecial 
-                            ? theme.cellSpecialBackground 
-                            : cell.isWin 
-                              ? theme.cellWinBackground 
+                          background: cell.isSpecial
+                            ? theme.cellSpecialBackground
+                            : cell.isWin
+                              ? theme.cellWinBackground
                               : theme.cellBackground,
                           transform: isRevealed ? 'scale(1)' : 'scale(0.9)',
                         }}
                       >
-                        <span 
-                          className={`text-2xl ${cell.isSpecial ? 'animate-bounce' : ''}`}
-                          style={{ 
+                        <div
+                          className={`${cell.isSpecial ? 'animate-bounce' : ''} `}
+                          style={{
                             filter: cell.isSpecial ? 'drop-shadow(0 0 8px gold)' : 'none',
                           }}
                         >
-                          {cell.symbol.emoji}
-                        </span>
-                        <span 
-                          className="text-xs font-bold mt-0.5"
+                          {renderSymbol(cell.symbol, "size-8")}
+                        </div>
+                        <span
+                          className="text-xs font-bold mt-1"
                           style={{ color: theme.prizeTextColor }}
                         >
                           {cell.points}分
@@ -280,7 +284,7 @@ export function LotteryTicket({
 
                     {/* 中奖标记 */}
                     {isRevealed && (cell.isWin || cell.isSpecial) && (
-                      <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center shadow-lg animate-bounce">
+                      <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center shadow-lg animate-bounce z-10">
                         <span className="text-white text-xs font-bold">!</span>
                       </div>
                     )}
@@ -293,12 +297,12 @@ export function LotteryTicket({
 
         {/* 状态栏 */}
         <div className="px-4 py-3">
-          <div 
+          <div
             className="text-center py-2 px-4 rounded-lg"
-            style={{ 
-              background: isAllRevealed 
-                ? winResult.isWin 
-                  ? 'linear-gradient(90deg, #ffd700 0%, #ffed4a 50%, #ffd700 100%)' 
+            style={{
+              background: isAllRevealed
+                ? winResult.isWin
+                  ? 'linear-gradient(90deg, #ffd700 0%, #ffed4a 50%, #ffd700 100%)'
                   : 'rgba(255,255,255,0.1)'
                 : 'rgba(255,255,255,0.05)',
             }}
@@ -325,7 +329,7 @@ export function LotteryTicket({
         </div>
 
         {/* 底部装饰 */}
-        <div 
+        <div
           className="h-2"
           style={{ background: theme.headerGradient }}
         />

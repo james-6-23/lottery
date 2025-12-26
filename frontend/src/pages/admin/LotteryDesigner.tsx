@@ -4,7 +4,7 @@ import { LotteryTicket } from '@/components/LotteryDesigner/LotteryTicket';
 import type { LotteryConfig, LotteryCell, LotterySymbol } from '@/components/LotteryDesigner/types';
 import { DEFAULT_CONFIG } from '@/components/LotteryDesigner/types';
 import { Button } from '@/components/ui/button';
-import { Save, RefreshCw, Download, Eye, EyeOff, Smartphone, Monitor } from 'lucide-react';
+import { Save, RefreshCw, Download, Eye, EyeOff, Smartphone, Monitor, Palette } from 'lucide-react';
 
 type PreviewDevice = 'desktop' | 'mobile';
 
@@ -18,11 +18,11 @@ export function AdminLotteryDesigner() {
   const generateDemoCells = useCallback((cfg: LotteryConfig): LotteryCell[] => {
     const totalCells = cfg.rows * cfg.cols;
     const allSymbols = [...cfg.symbols, ...cfg.specialSymbols];
-    
+
     if (allSymbols.length === 0) {
       return Array.from({ length: totalCells }, (_, i) => ({
         index: i,
-        symbol: { id: 'empty', name: '空', emoji: '❓', prizeMultiplier: 0, isSpecial: false },
+        symbol: { id: 'empty', name: '空', icon: 'QuestionMarkCircleIcon', prizeMultiplier: 0, isSpecial: false },
         points: 0,
         isWin: false,
         isSpecial: false,
@@ -33,11 +33,11 @@ export function AdminLotteryDesigner() {
     // 随机生成单元格，确保有一定概率中奖
     const cells: LotteryCell[] = [];
     const shouldWin = Math.random() > 0.5;
-    
+
     // 如果应该中奖，先放置匹配的符号
     let winSymbol: LotterySymbol | null = null;
     const winPositions: number[] = [];
-    
+
     if (shouldWin && cfg.symbols.length > 0) {
       winSymbol = cfg.symbols[Math.floor(Math.random() * cfg.symbols.length)];
       // 随机选择位置放置中奖符号
@@ -112,7 +112,7 @@ export function AdminLotteryDesigner() {
       {/* 顶部工具栏 */}
       <div className="designer-toolbar">
         <div className="toolbar-left">
-          <h1 className="page-title">🎨 彩票设计器</h1>
+          <h1 className="page-title flex items-center gap-2"><Palette className="w-6 h-6" /> 彩票设计器</h1>
           <span className="page-subtitle">可视化设计刮刮乐彩票</span>
         </div>
         <div className="toolbar-right">
@@ -164,7 +164,7 @@ export function AdminLotteryDesigner() {
             <div className="preview-header">
               <span className="preview-label">实时预览</span>
               {previewDevice === 'mobile' && (
-                <span className="device-label">📱 移动端视图</span>
+                <span className="device-label flex items-center gap-1"><Smartphone className="w-3 h-3" /> 移动端视图</span>
               )}
             </div>
             <div className="preview-content">
@@ -174,7 +174,8 @@ export function AdminLotteryDesigner() {
                 cells={demoCells}
                 ticketNumber={`DEMO-${String(refreshKey + 1).padStart(3, '0')}`}
                 previewMode={previewMode}
-                disabled={previewMode}
+                disabled={previewMode} // If hiding content, scratch might also be disabled or reset
+                interactive={true} // Enable scratching in preview
               />
             </div>
             <div className="preview-info">

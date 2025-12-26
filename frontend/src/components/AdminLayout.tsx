@@ -2,19 +2,21 @@ import { useEffect, useState } from 'react';
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { Button } from '@/components/ui/button';
-import { 
-  LayoutDashboard, 
-  BarChart3, 
-  Ticket, 
-  ShoppingBag, 
-  Users, 
-  Settings, 
-  FileText, 
-  ChevronLeft, 
+import {
+  LayoutDashboard,
+  BarChart3,
+  Ticket,
+  ShoppingBag,
+  Users,
+  Settings,
+  FileText,
+  ChevronLeft,
   ChevronRight,
   LogOut,
   Home,
-  Palette
+  Palette,
+  ShieldCheck,
+  UserCircle
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -75,7 +77,7 @@ export function AdminLayout() {
   return (
     <div className="min-h-screen bg-background flex">
       {/* Sidebar */}
-      <aside 
+      <aside
         className={cn(
           "bg-card border-r transition-all duration-300 flex flex-col relative",
           sidebarOpen ? "w-64" : "w-16"
@@ -83,12 +85,12 @@ export function AdminLayout() {
       >
         {/* Logo */}
         <div className="h-16 flex items-center px-4 border-b overflow-hidden whitespace-nowrap">
-           <Link to="/admin" className="flex items-center gap-2 font-bold text-primary text-lg">
-             <span className="text-2xl">🎰</span>
-             <span className={cn("transition-opacity duration-300", !sidebarOpen && "opacity-0 hidden")}>
-               管理后台
-             </span>
-           </Link>
+          <Link to="/admin" className="flex items-center gap-2 font-bold text-primary text-lg">
+            <ShieldCheck className="h-6 w-6" />
+            <span className={cn("transition-opacity duration-300", !sidebarOpen && "opacity-0 hidden")}>
+              管理后台
+            </span>
+          </Link>
         </div>
 
         {/* Toggle Button */}
@@ -127,8 +129,8 @@ export function AdminLayout() {
         <div className="p-2 border-t">
           <Link to="/">
             <Button variant="outline" className={cn("w-full", !sidebarOpen && "px-0 justify-center")}>
-               <Home className={cn("h-4 w-4", sidebarOpen && "mr-2")} />
-               {sidebarOpen && "返回前台"}
+              <Home className={cn("h-4 w-4", sidebarOpen && "mr-2")} />
+              {sidebarOpen && "返回前台"}
             </Button>
           </Link>
         </div>
@@ -141,19 +143,19 @@ export function AdminLayout() {
           <h1 className="text-lg font-semibold truncate">
             {NAV_ITEMS.find(item => isActive(item.path, item.exact))?.label || '管理后台'}
           </h1>
-          
+
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-3 pl-4 border-l">
               <div className="flex items-center gap-2">
                 {user?.avatar ? (
-                  <img 
-                    src={user.avatar} 
-                    alt={user.username} 
+                  <img
+                    src={user.avatar}
+                    alt={user.username}
                     className="w-8 h-8 rounded-full"
                   />
                 ) : (
                   <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                    <span className="text-sm">👑</span>
+                    <UserCircle className="h-5 w-5 text-primary" />
                   </div>
                 )}
                 <span className="text-sm font-medium hidden sm:inline-block">{user?.username}</span>

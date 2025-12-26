@@ -3,13 +3,13 @@ import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { 
-  LogOut, 
-  User, 
-  Wallet, 
-  ShieldCheck, 
-  ShoppingBag, 
-  Ticket, 
+import {
+  LogOut,
+  User,
+  Wallet,
+  ShieldCheck,
+  ShoppingBag,
+  Ticket,
   LayoutDashboard,
   Menu,
   X
@@ -82,14 +82,14 @@ export function Layout() {
     <div className="min-h-screen bg-background relative flex flex-col font-sans antialiased selection:bg-primary/10">
       {/* Background Grid Pattern */}
       <div className="fixed inset-0 z-[-1] bg-grid-pattern opacity-[0.4] pointer-events-none" />
-      
+
       {/* Gradient Blob for subtle color splash */}
       <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-primary/5 blur-[100px] rounded-full pointer-events-none z-[-1]" />
 
       <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/60 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60">
         <div className="container mx-auto px-4 h-14 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2 mr-6 group">
-            <span className="text-2xl transition-transform group-hover:scale-110 duration-300">🎰</span>
+            <Ticket className="w-8 h-8 text-primary transition-transform group-hover:scale-110 duration-300" />
             <span className="text-lg font-bold tracking-tight text-gradient-brand hidden md:inline-block">
               刮刮乐
             </span>
@@ -116,7 +116,7 @@ export function Layout() {
                 </div>
 
                 <div className="hidden md:flex items-center gap-2">
-                   {user.role === 'admin' && (
+                  {user.role === 'admin' && (
                     <Link to="/admin">
                       <Button variant="outline" size="sm" className="gap-2 h-8 text-xs border-amber-500/20 text-amber-600 hover:text-amber-700 hover:bg-amber-500/10 dark:text-amber-400 dark:hover:bg-amber-500/20">
                         <LayoutDashboard className="h-3 w-3" />
@@ -124,13 +124,13 @@ export function Layout() {
                       </Button>
                     </Link>
                   )}
-                  
+
                   <Link to="/profile">
                     <Button variant="ghost" size="sm" className="gap-2 h-8 pl-1">
                       {user.avatar ? (
-                        <img 
-                          src={user.avatar} 
-                          alt={user.username} 
+                        <img
+                          src={user.avatar}
+                          alt={user.username}
                           className="w-6 h-6 rounded-full ring-1 ring-border"
                         />
                       ) : (
@@ -156,9 +156,9 @@ export function Layout() {
             )}
 
             {/* Mobile Menu Button */}
-            <Button 
-              variant="ghost" 
-              size="icon" 
+            <Button
+              variant="ghost"
+              size="icon"
               className="md:hidden h-9 w-9"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             >
@@ -177,7 +177,7 @@ export function Layout() {
               <NavLink to="/wallet" icon={Wallet} currentPath={location.pathname} onClick={closeMobileMenu}>我的钱包</NavLink>
               <NavLink to="/profile" icon={User} currentPath={location.pathname} onClick={closeMobileMenu}>个人中心</NavLink>
             </nav>
-            
+
             {isAuthenticated && user ? (
               <div className="border-t border-border/40 pt-4 space-y-3">
                 <div className="flex items-center justify-between px-2 py-2 bg-secondary/30 rounded-lg">
@@ -198,7 +198,7 @@ export function Layout() {
                     <LogOut className="h-4 w-4 text-muted-foreground" />
                   </Button>
                 </div>
-                
+
                 {user.role === 'admin' && (
                   <Link to="/admin" className="block">
                     <Button variant="outline" className="w-full justify-start gap-2 h-9">
@@ -219,20 +219,25 @@ export function Layout() {
         )}
       </header>
 
-      <main className="flex-1 container mx-auto px-4 py-8 md:py-12 animate-in fade-in duration-500">
+      <main className={cn(
+        "flex-1 animate-in fade-in duration-500",
+        location.pathname === '/' ? "w-full" : "container mx-auto px-4 py-8 md:py-12"
+      )}>
         <Outlet />
       </main>
 
-      <footer className="border-t border-border/40 py-8 mt-auto bg-muted/20">
-        <div className="container mx-auto px-4 text-center">
-          <div className="flex items-center justify-center gap-2 mb-4 opacity-50">
-            <span className="text-2xl">🎰</span>
+      {location.pathname !== '/' && (
+        <footer className="border-t border-border/40 py-8 mt-auto bg-muted/20">
+          <div className="container mx-auto px-4 text-center">
+            <div className="flex items-center justify-center gap-2 mb-4 opacity-50">
+              <Ticket className="w-8 h-8" />
+            </div>
+            <p className="text-sm text-muted-foreground">
+              © {new Date().getFullYear()} 刮刮乐 · Fair & Fun Lottery
+            </p>
           </div>
-          <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} 刮刮乐 · Fair & Fun Lottery
-          </p>
-        </div>
-      </footer>
+        </footer>
+      )}
     </div>
   );
 }
