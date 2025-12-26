@@ -91,6 +91,10 @@ docker run -d -p 5678:5678 ghcr.io/james-6-23/lottery:latest
 | `LINUXDO_CLIENT_ID` | LinuxDO OAuth ID | - |
 | `LINUXDO_SECRET` | LinuxDO OAuth Secret | - |
 | `LINUXDO_CALLBACK_URL` | OAuth 回调地址 | - |
+| `LOG_LEVEL` | 日志级别 | `info` |
+| `LOG_FORMAT` | 日志格式 | `text`（dev）/ `json`（prod） |
+| `LOG_OUTPUT` | 日志输出 | `stdout` |
+| `LOG_FILE` | 日志文件路径（LOG_OUTPUT=file/both） | - |
 
 ## 开发
 

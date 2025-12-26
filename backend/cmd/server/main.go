@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 
 	"scratch-lottery/internal/cache"
 	"scratch-lottery/internal/config"
@@ -11,38 +10,48 @@ import (
 	"scratch-lottery/internal/repository"
 	"scratch-lottery/internal/service"
 	"scratch-lottery/pkg/auth"
+	"scratch-lottery/pkg/logger"
 
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
-	// Load configuration
+	// Load configuration (also loads `.env` if present)
 	cfg, err := config.Load()
 	if err != nil {
-		log.Fatalf("Failed to load configuration: %v", err)
+		logger.Default().Fatal("Failed to load configuration: %v", err)
 	}
+
+	// Configure logger after `.env` is loaded by config.Load()
+	logger.ConfigureFromEnv()
+	log := logger.Default()
+
+	// Print startup banner
+	logger.PrintBanner("Scratch Lottery", "1.0.0", cfg.OAuthMode)
+	log.Info("Configuration loaded (mode: %s)", cfg.OAuthMode)
 
 	// Initialize database
 	db, err := repository.InitDB(cfg)
 	if err != nil {
-		log.Fatalf("Failed to initialize database: %v", err)
+		log.Fatal("Failed to initialize database: %v", err)
 	}
 	defer func() {
 		_ = repository.CloseDB()
 	}()
+	log.Info("Database connected (%s)", cfg.DBDriver)
 
 	// Run migrations
 	if err := repository.AutoMigrate(db); err != nil {
-		log.Fatalf("Failed to run migrations: %v", err)
+		log.Fatal("Failed to run migrations: %v", err)
 	}
-	log.Println("Database migrations completed")
+	log.Info("Database migrations completed")
 
 	// Seed development data if in dev mode
 	if cfg.IsDevMode() {
 		if err := repository.SeedDevData(db); err != nil {
-			log.Printf("Warning: Failed to seed dev data: %v", err)
+			log.Warn("Failed to seed dev data: %v", err)
 		} else {
-			log.Println("Development data seeded")
+			log.Info("Development data seeded")
 		}
 	}
 
@@ -84,12 +93,14 @@ func main() {
 	paymentHandler := handler.NewPaymentHandler(paymentService)
 
 	// Set Gin mode based on environment
-	if cfg.IsProdMode() {
-		gin.SetMode(gin.ReleaseMode)
-	}
+	logger.SetGinMode(cfg.OAuthMode)
 
-	// Create Gin router
-	r := gin.Default()
+	// Create Gin router with custom logger
+	gin.DisableConsoleColor()
+	r := gin.New()
+	r.Use(logger.GinRequestID())
+	r.Use(logger.GinLogger())
+	r.Use(logger.GinRecovery())
 
 	// CORS middleware
 	r.Use(func(c *gin.Context) {
@@ -131,11 +142,11 @@ func main() {
 			authGroup.POST("/login/dev", authHandler.DevLogin)
 			authGroup.POST("/refresh", authHandler.RefreshToken)
 			authGroup.POST("/logout", authHandler.Logout)
-			
+
 			// OAuth routes
 			authGroup.GET("/oauth/linuxdo", oauthHandler.LinuxdoLogin)
 			authGroup.GET("/oauth/callback", oauthHandler.LinuxdoCallback)
-			
+
 			// Protected auth routes
 			authGroup.GET("/me", middleware.AuthMiddleware(authService), authHandler.GetCurrentUser)
 		}
@@ -255,8 +266,11 @@ func main() {
 
 	// Start server
 	addr := fmt.Sprintf("%s:%s", cfg.ServerHost, cfg.ServerPort)
-	log.Printf("Starting server on %s (mode: %s)", addr, cfg.OAuthMode)
+	log.Info("Server starting on %s", addr)
+	log.Info("Mode: %s | DB: %s | Cache: %s", cfg.OAuthMode, cfg.DBDriver, "memory")
+	fmt.Println("════════════════════════════════════════════════════════════════")
+
 	if err := r.Run(addr); err != nil {
-		log.Fatalf("Failed to start server: %v", err)
+		log.Fatal("Failed to start server: %v", err)
 	}
 }

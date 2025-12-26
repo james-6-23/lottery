@@ -6,11 +6,11 @@ import (
 	"path/filepath"
 
 	"scratch-lottery/internal/config"
+	"scratch-lottery/pkg/logger"
 
 	"github.com/glebarez/sqlite"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
 )
 
 var db *gorm.DB
@@ -18,17 +18,10 @@ var db *gorm.DB
 // InitDB initializes the database connection
 func InitDB(cfg *config.Config) (*gorm.DB, error) {
 	var dialector gorm.Dialector
-	var gormConfig *gorm.Config
 
-	// Configure logger based on mode
-	if cfg.IsDevMode() {
-		gormConfig = &gorm.Config{
-			Logger: logger.Default.LogMode(logger.Info),
-		}
-	} else {
-		gormConfig = &gorm.Config{
-			Logger: logger.Default.LogMode(logger.Warn),
-		}
+	// Use custom GORM logger
+	gormConfig := &gorm.Config{
+		Logger: logger.GormLoggerForMode(cfg.OAuthMode),
 	}
 
 	switch cfg.DBDriver {

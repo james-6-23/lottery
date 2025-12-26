@@ -6,6 +6,25 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// APIError is attached to gin.Context errors for request logging.
+// It does not change the response body format by itself.
+type APIError struct {
+	HTTPStatus int
+	Code       int
+	Message    string
+	Details    string
+}
+
+func (e *APIError) Error() string {
+	if e == nil {
+		return ""
+	}
+	if e.Details != "" {
+		return e.Details
+	}
+	return e.Message
+}
+
 // Error codes
 const (
 	// General errors 1xxx
@@ -80,6 +99,13 @@ func Error(c *gin.Context, httpStatus int, code int, message string, details ...
 	if len(details) > 0 {
 		resp.Details = details[0]
 	}
+
+	_ = c.Error(&APIError{
+		HTTPStatus: httpStatus,
+		Code:       code,
+		Message:    message,
+		Details:    resp.Details,
+	})
 	c.JSON(httpStatus, resp)
 }
 

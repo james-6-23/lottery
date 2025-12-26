@@ -1,0 +1,57 @@
+# 开发环境 Docker Compose 配置
+# 使用方法: docker compose -f docker-compose.dev.yml up -d --build
+
+services:
+  # 应用服务（前端 + 后端）
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: lottery-app-dev
+    ports:
+      - "5678:5678"
+    environment:
+      # Server
+      - SERVER_PORT=8080
+      - SERVER_HOST=0.0.0.0
+      # Database (SQLite for dev)
+      - DB_DRIVER=sqlite
+      - DB_PATH=/app/data/lottery.db
+      # JWT
+      - JWT_SECRET=dev-secret-key-not-for-production
+      - JWT_ACCESS_EXPIRY=60
+      - JWT_REFRESH_EXPIRY=30
+      # OAuth - 开发模式
+      - OAUTH_MODE=dev
+      - LINUXDO_CLIENT_ID=
+      - LINUXDO_SECRET=
+      - LINUXDO_CALLBACK_URL=
+      # Cache (Memory for dev)
+      - CACHE_DRIVER=memory
+      # Payment
+      - PAYMENT_ENABLED=false
+      # Encryption
+      - ENCRYPTION_KEY=32-byte-key-for-aes-encryption!
+      # Logging
+      - LOG_LEVEL=debug
+      - LOG_FORMAT=text
+      - LOG_CALLER=true
+      - LOG_COLOR=true
+    volumes:
+      - dev_data:/app/data
+    networks:
+      - lottery-dev-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:5678/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+networks:
+  lottery-dev-net:
+    driver: bridge
+
+volumes:
+  dev_data:
