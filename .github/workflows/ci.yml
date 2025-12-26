@@ -4,8 +4,21 @@ on:
   push:
     branches: [main, develop]
     tags: ['v*']
+    paths-ignore:
+      - '*.md'
+      - 'docs/**'
+      - 'LICENSE'
+      - '.gitignore'
+      - 'install.sh'
+      - 'deploy-dev.sh'
+      - 'deploy-dev.bat'
   pull_request:
     branches: [main, develop]
+    paths-ignore:
+      - '*.md'
+      - 'docs/**'
+      - 'LICENSE'
+      - '.gitignore'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
