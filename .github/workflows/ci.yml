@@ -10,6 +10,8 @@ on:
       - 'LICENSE'
       - '.gitignore'
       - 'install.sh'
+      - 'uninstall.sh'
+      - '.env.example'
       - 'deploy-dev.sh'
       - 'deploy-dev.bat'
   pull_request:
