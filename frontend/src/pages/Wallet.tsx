@@ -14,7 +14,7 @@ import { getPaymentStatus } from '../api/payment';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Wallet as WalletIcon, Plus, History, Loader2, ArrowLeft, ArrowRight, Filter } from 'lucide-react';
+import { Wallet as WalletIcon, Plus, History, Loader2, ArrowLeft, ArrowRight, Filter, TrendingUp, TrendingDown, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const TRANSACTION_TYPES: { value: TransactionType | ''; label: string }[] = [
@@ -157,29 +157,30 @@ export function Wallet() {
   }
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto">
+    <div className="space-y-8 max-w-4xl mx-auto">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold tracking-tight">我的钱包</h1>
       </div>
 
       {/* Balance Card */}
-      <Card className="bg-primary text-primary-foreground border-none shadow-lg overflow-hidden relative">
-         <div className="absolute -right-10 -top-10 text-primary-foreground/10">
-            <WalletIcon className="w-48 h-48" />
+      <Card className="bg-gradient-to-br from-primary via-primary/90 to-primary/80 text-primary-foreground border-none shadow-2xl overflow-hidden relative group">
+         <div className="absolute -right-20 -top-20 text-primary-foreground/10 transition-transform duration-700 group-hover:scale-110 group-hover:rotate-12">
+            <WalletIcon className="w-64 h-64" />
          </div>
-         <CardContent className="p-8 relative z-10">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-               <div>
-                  <p className="text-primary-foreground/80 font-medium mb-2">当前余额</p>
+         <div className="absolute inset-0 bg-[url('/noise.png')] opacity-10 mix-blend-overlay pointer-events-none" />
+         <CardContent className="p-10 relative z-10">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-8">
+               <div className="space-y-2">
+                  <p className="text-primary-foreground/80 font-medium text-sm uppercase tracking-widest">Available Balance</p>
                   <div className="flex items-baseline gap-2">
-                     <span className="text-5xl font-bold">{wallet?.balance ?? 0}</span>
-                     <span className="text-lg opacity-80">积分</span>
+                     <span className="text-6xl font-bold tracking-tight tabular-nums">{wallet?.balance ?? 0}</span>
+                     <span className="text-xl opacity-80 font-medium">积分</span>
                   </div>
                </div>
                
                {paymentEnabled && (
                  <Link to="/recharge">
-                   <Button size="lg" variant="secondary" className="shadow-lg gap-2">
+                   <Button size="lg" variant="secondary" className="shadow-lg gap-2 h-12 px-8 font-semibold text-primary hover:bg-white">
                      <Plus className="w-5 h-5" /> 充值
                    </Button>
                  </Link>
@@ -189,12 +190,14 @@ export function Wallet() {
       </Card>
 
       {/* Transaction History */}
-      <Card>
-        <CardHeader className="border-b pb-4">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <Card className="glass-card border-border/40">
+        <CardHeader className="border-b border-border/40 pb-6 bg-muted/20">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div className="flex items-center gap-2">
-               <History className="w-5 h-5 text-muted-foreground" />
-               <CardTitle>交易记录</CardTitle>
+               <div className="p-2 bg-primary/10 rounded-lg">
+                 <History className="w-5 h-5 text-primary" />
+               </div>
+               <CardTitle className="text-lg">交易记录</CardTitle>
             </div>
             
             {/* Filter Pills */}
@@ -203,10 +206,13 @@ export function Wallet() {
                {TRANSACTION_TYPES.map((type) => (
                  <Button
                     key={type.value || 'all'}
-                    variant={filterType === type.value ? "default" : "outline"}
+                    variant={filterType === type.value ? "secondary" : "ghost"}
                     size="sm"
                     onClick={() => handleFilterChange(type.value)}
-                    className="h-8 rounded-full text-xs"
+                    className={cn(
+                      "h-8 rounded-full text-xs transition-all",
+                      filterType === type.value && "bg-primary/10 text-primary hover:bg-primary/20"
+                    )}
                  >
                    {type.label}
                  </Button>
@@ -217,37 +223,37 @@ export function Wallet() {
         
         <CardContent className="p-0">
           {transactions.length === 0 ? (
-            <div className="p-12 text-center text-muted-foreground">
-              暂无交易记录
+            <div className="p-12 text-center text-muted-foreground flex flex-col items-center">
+              <Clock className="w-12 h-12 text-muted-foreground/20 mb-4" />
+              <p>暂无交易记录</p>
             </div>
           ) : (
-            <div className="divide-y">
+            <div className="divide-y divide-border/40">
               {transactions.map((tx) => (
-                <div key={tx.id} className="p-4 flex items-center justify-between hover:bg-muted/50 transition-colors">
-                  <div className="flex items-center gap-4">
+                <div key={tx.id} className="p-5 flex items-center justify-between hover:bg-muted/30 transition-colors group">
+                  <div className="flex items-center gap-5">
                     <div className={cn(
-                      "w-10 h-10 rounded-full flex items-center justify-center text-lg",
-                      tx.amount >= 0 ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" : "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400"
+                      "w-12 h-12 rounded-2xl flex items-center justify-center text-xl shadow-sm transition-transform group-hover:scale-105",
+                      tx.amount >= 0 ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" : "bg-rose-500/10 text-rose-600 dark:text-rose-400"
                     )}>
-                        {tx.type === 'initial' && '🎁'}
-                        {tx.type === 'recharge' && '💳'}
-                        {tx.type === 'purchase' && '🎫'}
-                        {tx.type === 'win' && '🎉'}
-                        {tx.type === 'exchange' && '🛒'}
+                        {tx.amount >= 0 ? <TrendingUp className="w-6 h-6" /> : <TrendingDown className="w-6 h-6" />}
                     </div>
-                    <div>
-                      <p className="font-medium">{tx.description}</p>
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
-                        <Badge variant="outline" className="font-normal text-[10px] h-5 px-1.5">
+                    <div className="space-y-1">
+                      <p className="font-semibold text-base">{tx.description}</p>
+                      <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                        <Badge variant="outline" className="font-normal text-[10px] h-5 px-1.5 border-border/60">
                           {getTransactionTypeLabel(tx.type)}
                         </Badge>
-                        <span>{formatDate(tx.created_at)}</span>
+                        <span className="flex items-center gap-1">
+                          <Clock className="w-3 h-3" />
+                          {formatDate(tx.created_at)}
+                        </span>
                       </div>
                     </div>
                   </div>
                   <div className={cn(
-                    "text-lg font-bold font-mono",
-                    tx.amount >= 0 ? "text-green-600 dark:text-green-400" : "text-orange-600 dark:text-orange-400"
+                    "text-lg font-bold font-mono tracking-tight tabular-nums",
+                    tx.amount >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"
                   )}>
                     {formatAmount(tx.amount)}
                   </div>
@@ -265,17 +271,19 @@ export function Wallet() {
             <Button
               variant="outline"
               size="icon"
+              className="rounded-full border-border/40"
               onClick={() => handlePageChange(currentPage - 1)}
               disabled={currentPage <= 1}
             >
               <ArrowLeft className="w-4 h-4" />
             </Button>
-            <span className="text-sm text-muted-foreground">
+            <span className="text-sm text-muted-foreground font-mono bg-muted/30 px-3 py-1 rounded-full">
               {currentPage} / {totalPages}
             </span>
             <Button
               variant="outline"
               size="icon"
+              className="rounded-full border-border/40"
               onClick={() => handlePageChange(currentPage + 1)}
               disabled={currentPage >= totalPages}
             >
