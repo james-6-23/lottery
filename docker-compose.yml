@@ -1,49 +1,31 @@
-version: '3.8'
-
 services:
-  # Frontend service (React + Nginx)
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    container_name: lottery-frontend
+  # 应用服务（前端 + 后端）
+  app:
+    image: ghcr.io/james-6-23/lottery:latest
+    container_name: lottery-app
     ports:
-      - "80:80"
-    depends_on:
-      - backend
-    networks:
-      - lottery-network
-    restart: unless-stopped
-
-  # Backend service (Go + Gin)
-  backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    container_name: lottery-backend
-    ports:
-      - "8080:8080"
+      - "5678:5678"
     environment:
       # Server
       - SERVER_PORT=8080
       - SERVER_HOST=0.0.0.0
-      # Database
+      # Database (PostgreSQL)
       - DB_DRIVER=postgres
       - DB_HOST=postgres
       - DB_PORT=5432
       - DB_USER=${DB_USER:-postgres}
       - DB_PASSWORD=${DB_PASSWORD:-postgres}
-      - DB_NAME=${DB_NAME:-scratch_lottery}
+      - DB_NAME=${DB_NAME:-lottery}
       # JWT
       - JWT_SECRET=${JWT_SECRET:-change-this-in-production}
       - JWT_ACCESS_EXPIRY=${JWT_ACCESS_EXPIRY:-15}
       - JWT_REFRESH_EXPIRY=${JWT_REFRESH_EXPIRY:-7}
       # OAuth
-      - OAUTH_MODE=${OAUTH_MODE:-prod}
-      - LINUXDO_CLIENT_ID=${LINUXDO_CLIENT_ID}
-      - LINUXDO_SECRET=${LINUXDO_SECRET}
-      - LINUXDO_CALLBACK_URL=${LINUXDO_CALLBACK_URL:-http://localhost:8080/api/auth/oauth/callback}
-      # Cache
+      - OAUTH_MODE=${OAUTH_MODE:-dev}
+      - LINUXDO_CLIENT_ID=${LINUXDO_CLIENT_ID:-}
+      - LINUXDO_SECRET=${LINUXDO_SECRET:-}
+      - LINUXDO_CALLBACK_URL=${LINUXDO_CALLBACK_URL:-http://localhost:5678/api/auth/oauth/callback}
+      # Cache (Redis)
       - CACHE_DRIVER=redis
       - REDIS_HOST=redis
       - REDIS_PORT=6379
@@ -61,48 +43,44 @@ services:
       redis:
         condition: service_healthy
     networks:
-      - lottery-network
+      - lottery-net
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:5678/health"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 10s
+      start_period: 15s
 
-  # PostgreSQL database
+  # PostgreSQL 数据库
   postgres:
     image: postgres:16-alpine
     container_name: lottery-postgres
     environment:
       - POSTGRES_USER=${DB_USER:-postgres}
       - POSTGRES_PASSWORD=${DB_PASSWORD:-postgres}
-      - POSTGRES_DB=${DB_NAME:-scratch_lottery}
+      - POSTGRES_DB=${DB_NAME:-lottery}
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
     networks:
-      - lottery-network
+      - lottery-net
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-scratch_lottery}"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-lottery}"]
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 10s
 
-  # Redis cache
+  # Redis 缓存
   redis:
     image: redis:7-alpine
     container_name: lottery-redis
-    command: redis-server --appendonly yes ${REDIS_PASSWORD:+--requirepass $REDIS_PASSWORD}
+    command: redis-server --appendonly yes
     volumes:
       - redis_data:/data
-    ports:
-      - "6379:6379"
     networks:
-      - lottery-network
+      - lottery-net
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
@@ -112,11 +90,9 @@ services:
       start_period: 5s
 
 networks:
-  lottery-network:
+  lottery-net:
     driver: bridge
 
 volumes:
   postgres_data:
-    driver: local
   redis_data:
-    driver: local

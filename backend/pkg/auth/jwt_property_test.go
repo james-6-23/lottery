@@ -1,12 +1,25 @@
 package auth
 
 import (
+	"os"
+	"strconv"
 	"testing"
 
 	"github.com/leanovate/gopter"
 	"github.com/leanovate/gopter/gen"
 	"github.com/leanovate/gopter/prop"
 )
+
+// getMinSuccessfulTests returns the minimum number of successful tests for property testing.
+// Uses GOPTER_MIN_SUCCESSFUL_TESTS env var if set, otherwise defaults to 100.
+func getMinSuccessfulTests() int {
+	if val := os.Getenv("GOPTER_MIN_SUCCESSFUL_TESTS"); val != "" {
+		if n, err := strconv.Atoi(val); err == nil && n > 0 {
+			return n
+		}
+	}
+	return 100
+}
 
 // Property 11: JWT 令牌有效性
 // For any successful login (including OAuth2 and dev mode), the system must return
@@ -15,7 +28,7 @@ import (
 
 func TestProperty11_JWTTokenValidity(t *testing.T) {
 	parameters := gopter.DefaultTestParameters()
-	parameters.MinSuccessfulTests = 100
+	parameters.MinSuccessfulTests = getMinSuccessfulTests()
 	parameters.Rng.Seed(1234)
 
 	properties := gopter.NewProperties(parameters)

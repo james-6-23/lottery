@@ -16,7 +16,7 @@ import (
 
 func TestProperty14_PaymentCallbackSignatureVerification(t *testing.T) {
 	parameters := gopter.DefaultTestParameters()
-	parameters.MinSuccessfulTests = 100
+	parameters.MinSuccessfulTests = getMinSuccessfulTests()
 	parameters.Rng.Seed(1234)
 
 	properties := gopter.NewProperties(parameters)

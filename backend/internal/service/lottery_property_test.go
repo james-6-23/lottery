@@ -48,7 +48,7 @@ func setupLotteryTestDB(t *testing.T) *gorm.DB {
 
 func TestProperty2_SecurityCodeGlobalUniqueness(t *testing.T) {
 	parameters := gopter.DefaultTestParameters()
-	parameters.MinSuccessfulTests = 100
+	parameters.MinSuccessfulTests = getMinSuccessfulTests()
 	parameters.Rng.Seed(1234)
 
 	properties := gopter.NewProperties(parameters)
@@ -273,7 +273,7 @@ func TestProperty2_SecurityCodeGlobalUniqueness(t *testing.T) {
 
 func TestProperty6_TicketContentEncryptedStorage(t *testing.T) {
 	parameters := gopter.DefaultTestParameters()
-	parameters.MinSuccessfulTests = 100
+	parameters.MinSuccessfulTests = getMinSuccessfulTests()
 	parameters.Rng.Seed(1234)
 
 	properties := gopter.NewProperties(parameters)
@@ -559,7 +559,7 @@ func containsHelper(s, substr string) bool {
 
 func TestProperty3_PurchaseBalanceVerification(t *testing.T) {
 	parameters := gopter.DefaultTestParameters()
-	parameters.MinSuccessfulTests = 100
+	parameters.MinSuccessfulTests = getMinSuccessfulTests()
 	parameters.Rng.Seed(1234)
 
 	properties := gopter.NewProperties(parameters)
@@ -888,7 +888,7 @@ func TestProperty3_PurchaseBalanceVerification(t *testing.T) {
 
 func TestProperty4_PurchaseTransactionConsistency(t *testing.T) {
 	parameters := gopter.DefaultTestParameters()
-	parameters.MinSuccessfulTests = 100
+	parameters.MinSuccessfulTests = getMinSuccessfulTests()
 	parameters.Rng.Seed(1234)
 
 	properties := gopter.NewProperties(parameters)
@@ -1232,7 +1232,7 @@ func TestProperty4_PurchaseTransactionConsistency(t *testing.T) {
 
 func TestProperty5_WinningPrizePayout(t *testing.T) {
 	parameters := gopter.DefaultTestParameters()
-	parameters.MinSuccessfulTests = 100
+	parameters.MinSuccessfulTests = getMinSuccessfulTests()
 	parameters.Rng.Seed(1234)
 
 	properties := gopter.NewProperties(parameters)
@@ -1707,7 +1707,7 @@ func TestProperty5_WinningPrizePayout(t *testing.T) {
 
 func TestProperty7_SecurityCodeQueryInfoHiding(t *testing.T) {
 	parameters := gopter.DefaultTestParameters()
-	parameters.MinSuccessfulTests = 100
+	parameters.MinSuccessfulTests = getMinSuccessfulTests()
 	parameters.Rng.Seed(1234)
 
 	properties := gopter.NewProperties(parameters)
@@ -2087,7 +2087,7 @@ func TestProperty7_SecurityCodeQueryInfoHiding(t *testing.T) {
 
 func TestProperty12_PrizePoolTicketQuantityConsistency(t *testing.T) {
 	parameters := gopter.DefaultTestParameters()
-	parameters.MinSuccessfulTests = 100
+	parameters.MinSuccessfulTests = getMinSuccessfulTests()
 	parameters.Rng.Seed(1234)
 
 	properties := gopter.NewProperties(parameters)

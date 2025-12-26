@@ -78,7 +78,7 @@ func createTestPatternConfig(areaCount int, patternCount int, specialPatternCoun
 
 func TestProperty13_PatternLotteryWinJudgment(t *testing.T) {
 	parameters := gopter.DefaultTestParameters()
-	parameters.MinSuccessfulTests = 100
+	parameters.MinSuccessfulTests = getMinSuccessfulTests()
 	parameters.Rng.Seed(1234)
 
 	properties := gopter.NewProperties(parameters)

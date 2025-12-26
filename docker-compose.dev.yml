@@ -1,58 +1,84 @@
-version: '3.8'
-
 # Development Docker Compose configuration
-# Uses SQLite and memory cache for simpler local development
 
 services:
-  # Frontend service (React + Nginx)
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    container_name: lottery-frontend-dev
+  # 应用服务（前端 + 后端）
+  app:
+    image: ghcr.io/james-6-23/lottery:latest
+    container_name: lottery-dev
     ports:
-      - "80:80"
-    depends_on:
-      - backend
-    networks:
-      - lottery-network-dev
-
-  # Backend service (Go + Gin) with SQLite
-  backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    container_name: lottery-backend-dev
-    ports:
-      - "8080:8080"
+      - "5678:5678"
     environment:
       # Server
       - SERVER_PORT=8080
       - SERVER_HOST=0.0.0.0
-      # Database (SQLite)
-      - DB_DRIVER=sqlite
-      - DB_PATH=/app/data/lottery.db
+      # Database (PostgreSQL)
+      - DB_DRIVER=postgres
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_NAME=lottery
       # JWT
-      - JWT_SECRET=dev-secret-key
+      - JWT_SECRET=dev-secret-key-change-in-prod
       - JWT_ACCESS_EXPIRY=60
       - JWT_REFRESH_EXPIRY=30
       # OAuth (dev mode)
       - OAUTH_MODE=dev
-      # Cache (memory)
-      - CACHE_DRIVER=memory
+      # Cache (Redis)
+      - CACHE_DRIVER=redis
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
       # Payment (disabled)
       - PAYMENT_ENABLED=false
       # Encryption
       - ENCRYPTION_KEY=32-byte-key-for-aes-encryption!
-    volumes:
-      - backend_data:/app/data
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     networks:
-      - lottery-network-dev
+      - lottery-dev-net
+
+  # PostgreSQL 数据库
+  postgres:
+    image: postgres:16-alpine
+    container_name: lottery-dev-postgres
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=lottery
+    volumes:
+      - dev_postgres_data:/var/lib/postgresql/data
+    networks:
+      - lottery-dev-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d lottery"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # Redis 缓存
+  redis:
+    image: redis:7-alpine
+    container_name: lottery-dev-redis
+    command: redis-server --appendonly yes
+    volumes:
+      - dev_redis_data:/data
+    networks:
+      - lottery-dev-net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
 
 networks:
-  lottery-network-dev:
+  lottery-dev-net:
     driver: bridge
 
 volumes:
-  backend_data:
-    driver: local
+  dev_postgres_data:
+  dev_redis_data:

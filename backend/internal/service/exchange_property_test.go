@@ -92,7 +92,7 @@ func createTestProductWithCardKeys(db *gorm.DB, productID uint, price int, numKe
 
 func TestProperty8_ExchangeBalanceVerification(t *testing.T) {
 	parameters := gopter.DefaultTestParameters()
-	parameters.MinSuccessfulTests = 100
+	parameters.MinSuccessfulTests = getMinSuccessfulTests()
 	parameters.Rng.Seed(1234)
 
 	properties := gopter.NewProperties(parameters)
@@ -278,7 +278,7 @@ func TestProperty8_ExchangeBalanceVerification(t *testing.T) {
 
 func TestProperty9_ExchangeTransactionConsistency(t *testing.T) {
 	parameters := gopter.DefaultTestParameters()
-	parameters.MinSuccessfulTests = 100
+	parameters.MinSuccessfulTests = getMinSuccessfulTests()
 	parameters.Rng.Seed(5678)
 
 	properties := gopter.NewProperties(parameters)
@@ -494,7 +494,7 @@ func TestProperty9_ExchangeTransactionConsistency(t *testing.T) {
 
 func TestProperty10_ProductStockAutoUpdate(t *testing.T) {
 	parameters := gopter.DefaultTestParameters()
-	parameters.MinSuccessfulTests = 100
+	parameters.MinSuccessfulTests = getMinSuccessfulTests()
 	parameters.Rng.Seed(9012)
 
 	properties := gopter.NewProperties(parameters)

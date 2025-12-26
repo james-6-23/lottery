@@ -2,6 +2,7 @@ package service
 
 import (
 	"os"
+	"strconv"
 	"testing"
 
 	"scratch-lottery/internal/model"
@@ -13,6 +14,17 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
+
+// getMinSuccessfulTests returns the minimum number of successful tests for property testing.
+// Uses GOPTER_MIN_SUCCESSFUL_TESTS env var if set, otherwise defaults to 100.
+func getMinSuccessfulTests() int {
+	if val := os.Getenv("GOPTER_MIN_SUCCESSFUL_TESTS"); val != "" {
+		if n, err := strconv.Atoi(val); err == nil && n > 0 {
+			return n
+		}
+	}
+	return 100
+}
 
 // Property 1: 新用户钱包初始化
 // For any newly registered user, the system should automatically create a wallet
@@ -39,7 +51,7 @@ func setupTestDB(t *testing.T) *gorm.DB {
 
 func TestProperty1_NewUserWalletInitialization(t *testing.T) {
 	parameters := gopter.DefaultTestParameters()
-	parameters.MinSuccessfulTests = 100
+	parameters.MinSuccessfulTests = getMinSuccessfulTests()
 	parameters.Rng.Seed(1234)
 
 	properties := gopter.NewProperties(parameters)
