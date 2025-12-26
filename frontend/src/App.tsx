@@ -10,10 +10,12 @@ import { Recharge } from './pages/Recharge'
 import { Exchange } from './pages/Exchange'
 import { Profile } from './pages/Profile'
 import { Login } from './pages/Login'
+import { About } from './pages/About'
 import { Verify } from './pages/Verify'
 import {
   AdminDashboard,
   AdminLotteryTypes,
+  AdminLotteryDesigner,
   AdminProducts,
   AdminUsers,
   AdminSettings,
@@ -28,6 +30,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/" element={<Layout />}>
           <Route index element={<Home />} />
+          <Route path="about" element={<About />} />
           <Route path="lottery" element={<Lottery />} />
           <Route path="lottery/:id" element={<LotteryDetail />} />
           <Route path="scratch/:id" element={<Scratch />} />
@@ -40,6 +43,7 @@ function App() {
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<AdminDashboard />} />
           <Route path="lottery" element={<AdminLotteryTypes />} />
+          <Route path="lottery/designer" element={<AdminLotteryDesigner />} />
           <Route path="products" element={<AdminProducts />} />
           <Route path="users" element={<AdminUsers />} />
           <Route path="settings" element={<AdminSettings />} />

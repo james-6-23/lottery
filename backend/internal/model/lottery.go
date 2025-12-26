@@ -29,16 +29,17 @@ const (
 // LotteryType represents a type of lottery game
 type LotteryType struct {
 	gorm.Model
-	Name        string            `gorm:"size:128" json:"name"`
-	Description string            `gorm:"type:text" json:"description"`
-	Price       int               `json:"price"`
-	MaxPrize    int               `json:"max_prize"`
-	GameType    GameType          `gorm:"size:32" json:"game_type"`
-	CoverImage  string            `gorm:"size:512" json:"cover_image"`
-	RulesConfig string            `gorm:"type:text" json:"rules_config"` // JSON configuration
-	Status      LotteryTypeStatus `gorm:"size:32;default:available" json:"status"`
-	PrizeLevels []PrizeLevel      `gorm:"foreignKey:LotteryTypeID" json:"prize_levels,omitempty"`
-	PrizePools  []PrizePool       `gorm:"foreignKey:LotteryTypeID" json:"prize_pools,omitempty"`
+	Name         string            `gorm:"size:128" json:"name"`
+	Description  string            `gorm:"type:text" json:"description"`
+	Price        int               `json:"price"`
+	MaxPrize     int               `json:"max_prize"`
+	GameType     GameType          `gorm:"size:32" json:"game_type"`
+	CoverImage   string            `gorm:"size:512" json:"cover_image"`
+	RulesConfig  string            `gorm:"type:text" json:"rules_config"`  // JSON configuration for game rules
+	DesignConfig string            `gorm:"type:text" json:"design_config"` // JSON configuration for visual design
+	Status       LotteryTypeStatus `gorm:"size:32;default:available" json:"status"`
+	PrizeLevels  []PrizeLevel      `gorm:"foreignKey:LotteryTypeID" json:"prize_levels,omitempty"`
+	PrizePools   []PrizePool       `gorm:"foreignKey:LotteryTypeID" json:"prize_pools,omitempty"`
 }
 
 // PrizeLevel represents a prize level configuration

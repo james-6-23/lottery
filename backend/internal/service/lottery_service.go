@@ -55,10 +55,11 @@ type LotteryTypeResponse struct {
 // LotteryTypeDetailResponse represents detailed lottery type info
 type LotteryTypeDetailResponse struct {
 	LotteryTypeResponse
-	Rules       string               `json:"rules"`
-	RulesConfig interface{}          `json:"rules_config,omitempty"`
-	PrizeLevels []PrizeLevelResponse `json:"prize_levels"`
-	WinSymbols  []string             `json:"win_symbols,omitempty"`
+	Rules        string               `json:"rules"`
+	RulesConfig  interface{}          `json:"rules_config,omitempty"`
+	DesignConfig interface{}          `json:"design_config,omitempty"`
+	PrizeLevels  []PrizeLevelResponse `json:"prize_levels"`
+	WinSymbols   []string             `json:"win_symbols,omitempty"`
 }
 
 // PrizeLevelResponse represents a prize level in API responses
@@ -97,14 +98,15 @@ type CreateLotteryTypeRequest struct {
 
 // UpdateLotteryTypeRequest represents the request to update a lottery type
 type UpdateLotteryTypeRequest struct {
-	Name        *string                   `json:"name"`
-	Description *string                   `json:"description"`
-	Price       *int                      `json:"price"`
-	MaxPrize    *int                      `json:"max_prize"`
-	GameType    *model.GameType           `json:"game_type"`
-	CoverImage  *string                   `json:"cover_image"`
-	RulesConfig interface{}               `json:"rules_config"`
-	Status      *model.LotteryTypeStatus  `json:"status"`
+	Name         *string                   `json:"name"`
+	Description  *string                   `json:"description"`
+	Price        *int                      `json:"price"`
+	MaxPrize     *int                      `json:"max_prize"`
+	GameType     *model.GameType           `json:"game_type"`
+	CoverImage   *string                   `json:"cover_image"`
+	RulesConfig  interface{}               `json:"rules_config"`
+	DesignConfig interface{}               `json:"design_config"`
+	Status       *model.LotteryTypeStatus  `json:"status"`
 }
 
 // PrizeLevelInput represents input for creating prize levels
@@ -307,6 +309,13 @@ func (s *LotteryService) UpdateLotteryType(id uint, req UpdateLotteryTypeRequest
 		}
 		lotteryType.RulesConfig = string(data)
 	}
+	if req.DesignConfig != nil {
+		data, err := json.Marshal(req.DesignConfig)
+		if err != nil {
+			return nil, ErrInvalidPrizeConfig
+		}
+		lotteryType.DesignConfig = string(data)
+	}
 	if req.Status != nil {
 		lotteryType.Status = *req.Status
 	}
@@ -480,6 +489,12 @@ func (s *LotteryService) toLotteryTypeDetailResponse(lt *model.LotteryType) *Lot
 		_ = json.Unmarshal([]byte(lt.RulesConfig), &rulesConfig)
 	}
 
+	// Parse design config
+	var designConfig interface{}
+	if lt.DesignConfig != "" {
+		_ = json.Unmarshal([]byte(lt.DesignConfig), &designConfig)
+	}
+
 	// Parse win symbols from rules config
 	var winSymbols []string
 	if rulesConfig != nil {
@@ -521,10 +536,11 @@ func (s *LotteryService) toLotteryTypeDetailResponse(lt *model.LotteryType) *Lot
 			CreatedAt:   lt.CreatedAt,
 			UpdatedAt:   lt.UpdatedAt,
 		},
-		Rules:       lt.Description, // Use description as rules for now
-		RulesConfig: rulesConfig,
-		PrizeLevels: prizeLevels,
-		WinSymbols:  winSymbols,
+		Rules:        lt.Description, // Use description as rules for now
+		RulesConfig:  rulesConfig,
+		DesignConfig: designConfig,
+		PrizeLevels:  prizeLevels,
+		WinSymbols:   winSymbols,
 	}
 }
 

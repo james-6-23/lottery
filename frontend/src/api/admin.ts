@@ -159,6 +159,7 @@ export interface LotteryType {
   game_type: string;
   cover_image: string;
   rules_config: string;
+  design_config?: string;
   status: string;
   prize_levels?: PrizeLevel[];
   created_at: string;
@@ -173,6 +174,7 @@ export interface CreateLotteryTypeRequest {
   game_type: string;
   cover_image?: string;
   rules_config?: string;
+  design_config?: string;
   prize_levels?: PrizeLevel[];
 }
 
@@ -184,6 +186,7 @@ export interface UpdateLotteryTypeRequest {
   game_type?: string;
   cover_image?: string;
   rules_config?: string;
+  design_config?: string;
   status?: string;
 }
 
@@ -225,6 +228,11 @@ export async function createPrizePool(lotteryTypeId: number, req: CreatePrizePoo
 
 export async function getPrizePools(lotteryTypeId: number): Promise<PrizePool[]> {
   return apiClient.get<PrizePool[]>(`/lottery/types/${lotteryTypeId}/prize-pools`);
+}
+
+// Save lottery design configuration
+export async function saveLotteryDesign(lotteryTypeId: number, designConfig: unknown): Promise<LotteryType> {
+  return apiClient.put<LotteryType>(`/admin/lottery/types/${lotteryTypeId}`, { design_config: designConfig });
 }
 
 

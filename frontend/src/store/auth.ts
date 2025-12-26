@@ -38,6 +38,22 @@ export function setUser(user: User | null) {
   notifyListeners();
 }
 
+export function updateUserBalance(balance: number) {
+  if (state.user && state.user.wallet) {
+    state = {
+      ...state,
+      user: {
+        ...state.user,
+        wallet: {
+          ...state.user.wallet,
+          balance,
+        },
+      },
+    };
+    notifyListeners();
+  }
+}
+
 export function setLoading(isLoading: boolean) {
   state = { ...state, isLoading };
   notifyListeners();

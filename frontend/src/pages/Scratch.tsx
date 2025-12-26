@@ -17,7 +17,7 @@ import { useAuth } from '../hooks/useAuth';
 export function Scratch() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, refreshBalance } = useAuth();
 
   const [ticket, setTicket] = useState<TicketDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -126,6 +126,10 @@ export function Scratch() {
       const result = await scratchTicket(ticket.id);
       setScratchResult(result);
       setIsRevealed(true);
+      // 同步更新全局用户余额
+      if (result.new_balance !== undefined) {
+        refreshBalance(result.new_balance);
+      }
     } catch (err) {
       setScratchError(err instanceof Error ? err.message : '刮奖失败');
     } finally {
@@ -152,6 +156,10 @@ export function Scratch() {
       setScratchResult(result);
       setIsRevealed(true);
       setPatternPrize(totalPrize);
+      // 同步更新全局用户余额
+      if (result.new_balance !== undefined) {
+        refreshBalance(result.new_balance);
+      }
     } catch (err) {
       setScratchError(err instanceof Error ? err.message : '刮奖失败');
     } finally {

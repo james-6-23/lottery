@@ -1,130 +1,108 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Ticket, ShoppingBag, ShieldCheck, ArrowRight, Trophy, Gift, Zap, Sparkles } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { ShieldCheck, Zap, Globe, ArrowRight, CreditCard, Wallet } from 'lucide-react';
 
 export function Home() {
   return (
-    <div className="space-y-24 pb-20">
-      {/* Hero Section */}
-      <section className="relative text-center space-y-8 pt-16 md:pt-24 lg:pt-32 pb-12">
-        <div className="space-y-4 max-w-4xl mx-auto px-4">
-          <Badge variant="outline" className="py-1 px-4 rounded-full border-primary/20 bg-primary/5 text-primary animate-in fade-in zoom-in duration-500 delay-100">
-            <Sparkles className="w-3 h-3 mr-2" /> 全新升级 · 沉浸式体验
-          </Badge>
-          <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight leading-tight animate-in slide-in-from-bottom-4 duration-500 delay-200">
-            开启您的 <br className="md:hidden" />
-            <span className="text-gradient-brand">幸运之旅</span>
-          </h1>
-          <p className="mx-auto max-w-[600px] text-muted-foreground text-lg md:text-xl leading-relaxed animate-in slide-in-from-bottom-4 duration-500 delay-300">
-            公平公正的链上刮刮乐平台。即刻体验指尖的刺激，赢取丰厚积分，兑换真实好礼。
-          </p>
-        </div>
+    <div className="min-h-screen bg-[#F8F9FC] flex flex-col justify-center relative overflow-hidden">
+      
+      {/* Background Decor */}
+      <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-purple-100/40 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] bg-blue-100/40 rounded-full blur-[120px] pointer-events-none" />
+
+      <main className="max-w-7xl mx-auto px-6 lg:px-8 w-full z-10 grid lg:grid-cols-2 gap-12 items-center py-12">
         
-        <div className="flex flex-col sm:flex-row justify-center gap-4 animate-in slide-in-from-bottom-4 duration-500 delay-400">
-          <Link to="/lottery">
-            <Button size="lg" className="h-12 px-8 text-base rounded-full shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all duration-300 hover:scale-105">
-              <Ticket className="w-5 h-5 mr-2" />
-              立即刮奖
-            </Button>
-          </Link>
-          <Link to="/exchange">
-            <Button size="lg" variant="outline" className="h-12 px-8 text-base rounded-full hover:bg-secondary/80 backdrop-blur-sm bg-background/50 transition-all duration-300 hover:scale-105">
-              <ShoppingBag className="w-5 h-5 mr-2" />
-              浏览奖品
-            </Button>
-          </Link>
-        </div>
-
-        {/* Glow Effect behind Hero */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/10 blur-[120px] rounded-full pointer-events-none -z-10" />
-      </section>
-
-      {/* Features Grid (Bento Style) */}
-      <section className="max-w-6xl mx-auto px-4">
-        <h2 className="text-2xl font-bold text-center mb-12 text-muted-foreground/80">核心特色</h2>
-        <div className="grid gap-6 md:grid-cols-3">
-          <FeatureCard 
-            icon={Trophy} 
-            title="公平公正" 
-            description="透明的开奖机制，每一次刮奖都充满惊喜与公平。算法开源，拒绝黑箱。"
-            link="/lottery"
-            linkText="去试试手气"
-            delay={100}
-          />
-          <FeatureCard 
-            icon={Gift} 
-            title="积分兑换" 
-            description="刮奖获得的积分可以在商城兑换各种精美礼品和虚拟道具。实时发货，秒速到账。"
-            link="/exchange"
-            linkText="浏览商城"
-            delay={200}
-          />
-          <FeatureCard 
-            icon={ShieldCheck} 
-            title="安全保障" 
-            description="保安码验证系统，确保您的每一次兑换都安全无忧。多重加密，保护隐私。"
-            link="/verify"
-            linkText="验证保安码"
-            delay={300}
-          />
-        </div>
-      </section>
-
-      {/* Call to Action */}
-      <section className="relative max-w-5xl mx-auto px-4">
-        <div className="glass-card rounded-3xl p-8 md:p-16 text-center space-y-6 overflow-hidden relative">
-          <div className="relative z-10">
-            <h2 className="text-3xl md:text-4xl font-bold">准备好赢取大奖了吗？</h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto mt-4 mb-8">
-              注册即送初始积分，每天登录还有额外奖励。加入我们，体验指尖上的刺激！
+        {/* Left Column: Text & Actions */}
+        <div className="space-y-8 lg:pr-12 animate-in fade-in slide-in-from-bottom-8 duration-700">
+          <div className="space-y-4">
+            <h1 className="text-5xl lg:text-7xl font-bold tracking-tight text-slate-900 leading-[1.1]">
+              LINUX DO <span className="text-[#5e5ce6] font-serif italic">Credit</span>
+              <br />
+              <span className="text-[#5e5ce6] text-4xl lg:text-6xl block mt-2">让积分流通更简单</span>
+            </h1>
+            <p className="text-lg text-slate-500 max-w-xl leading-relaxed">
+              专为 LINUX DO 社区打造的积分流通基础设施
+              <br />
+              快速集成、全球覆盖、安全可靠，助您轻松流通积分。
             </p>
+          </div>
+
+          <div className="flex flex-wrap gap-4">
             <Link to="/login">
-              <Button size="lg" className="h-12 px-10 rounded-full font-semibold text-lg bg-foreground text-background hover:bg-foreground/90">
-                <Zap className="w-5 h-5 mr-2 fill-current" />
-                免费注册 / 登录
+              <Button size="lg" className="h-14 px-8 rounded-full bg-[#5e5ce6] hover:bg-[#4b4ac6] text-white shadow-lg shadow-[#5e5ce6]/25 text-base font-semibold transition-all hover:scale-105">
+                立即开始 <ArrowRight className="ml-2 w-5 h-5" />
+              </Button>
+            </Link>
+            <Link to="/about">
+              <Button size="lg" variant="secondary" className="h-14 px-8 rounded-full bg-[#EBEBFD] text-[#5e5ce6] hover:bg-[#EBEBFD]/80 text-base font-semibold transition-all hover:scale-105">
+                了解更多
               </Button>
             </Link>
           </div>
-          
-          {/* Decorative Elements */}
-          <div className="absolute -top-24 -left-24 w-64 h-64 bg-accent/20 blur-3xl rounded-full pointer-events-none" />
-          <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-primary/20 blur-3xl rounded-full pointer-events-none" />
-        </div>
-      </section>
-    </div>
-  )
-}
 
-function FeatureCard({ icon: Icon, title, description, link, linkText, delay }: any) {
-  return (
-    <Card className={cn(
-      "glass-card hover:border-primary/30 transition-all duration-300 group hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/5",
-      "animate-in fade-in slide-in-from-bottom-8 duration-700 fill-mode-backwards"
-    )} style={{ animationDelay: `${delay}ms` }}>
-      <CardHeader>
-        <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
-          <Icon className="w-6 h-6 text-primary" />
+          <div className="pt-8 border-t border-slate-200/60 flex flex-wrap gap-8 text-sm font-medium text-slate-600">
+            <div className="flex items-center gap-2">
+              <Zap className="w-5 h-5 text-yellow-500 fill-yellow-500" />
+              <span>极速到账</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Globe className="w-5 h-5 text-blue-500" />
+              <span>全球覆盖</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <ShieldCheck className="w-5 h-5 text-green-500" />
+              <span>安全加密</span>
+            </div>
+          </div>
         </div>
-        <CardTitle className="text-xl">{title}</CardTitle>
-        <CardDescription className="text-base pt-2">
-          {description}
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Link to={link} className="text-primary text-sm font-medium hover:underline inline-flex items-center gap-1 group/link">
-          {linkText} <ArrowRight className="w-3 h-3 transition-transform group-hover/link:translate-x-1" />
-        </Link>
-      </CardContent>
-    </Card>
-  )
-}
 
-function Badge({ children, className }: any) {
-  return (
-    <div className={cn("inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2", className)}>
-      {children}
+        {/* Right Column: Visual Card */}
+        <div className="relative animate-in fade-in zoom-in duration-700 delay-200 hidden lg:block">
+          <div className="relative z-10 transform perspective-1000 rotate-y-12 rotate-x-6 hover:rotate-y-0 hover:rotate-x-0 transition-transform duration-500 ease-out">
+            {/* Glass Card Container */}
+            <div className="bg-white/60 backdrop-blur-xl rounded-[2.5rem] p-8 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.1)] border border-white/50 relative overflow-hidden">
+              
+              {/* Floating Notification */}
+              <div className="absolute top-8 right-8 bg-white rounded-2xl p-4 shadow-lg border border-slate-100 flex items-center gap-4 animate-bounce-slow">
+                <div className="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center text-green-600">
+                  <Wallet className="w-6 h-6" />
+                </div>
+                <div>
+                  <div className="text-xs text-slate-400 font-medium">Income</div>
+                  <div className="text-sm font-bold text-slate-900">+ LDC 240.00</div>
+                </div>
+              </div>
+
+              {/* Main Card Graphic */}
+              <div className="mt-16 bg-gradient-to-br from-[#F3F0FF] to-[#E6E4FF] rounded-3xl p-8 aspect-[1.58/1] relative overflow-hidden border border-white/60 shadow-inner">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-[#5e5ce6]/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+                
+                <div className="relative z-10 flex flex-col justify-between h-full">
+                  <div className="flex items-center gap-3">
+                    <CreditCard className="w-6 h-6 text-slate-700" />
+                    <span className="font-medium text-slate-700 tracking-wide">LINUX DO Credit</span>
+                  </div>
+                  
+                  <div>
+                    <div className="text-sm text-slate-500 mb-1">Total Balance</div>
+                    <div className="text-4xl font-bold text-slate-900 tracking-tight">
+                      LDC 12,450.00
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end">
+                     <div className="w-10 h-10 rounded-full bg-[#5e5ce6] shadow-lg shadow-[#5e5ce6]/30" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Decorative Blur behind card */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-gradient-to-tr from-blue-200/30 to-purple-200/30 blur-[80px] -z-10 rounded-full" />
+        </div>
+
+      </main>
     </div>
-  )
+  );
 }

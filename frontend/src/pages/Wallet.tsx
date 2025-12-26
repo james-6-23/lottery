@@ -30,7 +30,7 @@ const PAGE_SIZE = 20;
 
 export function Wallet() {
   const navigate = useNavigate();
-  const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const { isAuthenticated, isLoading: authLoading, refreshBalance } = useAuth();
   
   const [wallet, setWallet] = useState<WalletResponse | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -49,10 +49,12 @@ export function Wallet() {
     try {
       const data = await getWallet();
       setWallet(data);
+      // 同步更新全局用户余额
+      refreshBalance(data.balance);
     } catch (err) {
       setError(err instanceof Error ? err.message : '获取钱包信息失败');
     }
-  }, []);
+  }, [refreshBalance]);
 
   // Fetch payment status
   const fetchPaymentStatus = useCallback(async () => {

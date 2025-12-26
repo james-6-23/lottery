@@ -15,7 +15,7 @@ import { useAuth } from '../hooks/useAuth';
 export function LotteryDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, refreshBalance } = useAuth();
 
   const [lottery, setLottery] = useState<LotteryTypeDetail | null>(null);
   const [wallet, setWallet] = useState<WalletResponse | null>(null);
@@ -82,8 +82,9 @@ export function LotteryDetail() {
       });
       setPurchaseResult(result);
       setShowPurchaseDialog(false);
-      // Refresh wallet
+      // Refresh wallet and sync global balance
       fetchWallet();
+      refreshBalance(result.balance);
     } catch (err) {
       setPurchaseError(err instanceof Error ? err.message : '购买失败');
     } finally {

@@ -9,6 +9,7 @@ import {
   saveTokens,
   getTokens,
   clearAuth,
+  updateUserBalance,
 } from '../store/auth';
 
 export function useAuth() {
@@ -65,6 +66,10 @@ export function useAuth() {
     }
   }, []);
 
+  const refreshBalance = useCallback((balance: number) => {
+    updateUserBalance(balance);
+  }, []);
+
   return {
     user: state.user,
     isAuthenticated: state.isAuthenticated,
@@ -72,5 +77,6 @@ export function useAuth() {
     login,
     logout,
     checkAuth,
+    refreshBalance,
   };
 }

@@ -13,14 +13,16 @@ import {
   ChevronLeft, 
   ChevronRight,
   LogOut,
-  Home
+  Home,
+  Palette
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const NAV_ITEMS = [
   { path: '/admin', label: '数据概览', icon: LayoutDashboard, exact: true },
   { path: '/admin/statistics', label: '数据统计', icon: BarChart3 },
-  { path: '/admin/lottery', label: '彩票管理', icon: Ticket },
+  { path: '/admin/lottery', label: '彩票管理', icon: Ticket, exact: true },
+  { path: '/admin/lottery/designer', label: '彩票设计器', icon: Palette },
   { path: '/admin/products', label: '商品管理', icon: ShoppingBag },
   { path: '/admin/users', label: '用户管理', icon: Users },
   { path: '/admin/settings', label: '系统设置', icon: Settings },

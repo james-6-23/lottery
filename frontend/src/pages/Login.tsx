@@ -4,7 +4,7 @@ import { getAuthMode, getDevUsers, devLogin } from '../api/auth';
 import type { DevUser } from '../api/auth';
 import { useAuth } from '../hooks/useAuth';
 import { Badge } from '@/components/ui/badge';
-import { AlertCircle, User, Crown, Lock, ChevronRight } from 'lucide-react';
+import { AlertCircle, ChevronRight, ExternalLink, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export function Login() {
@@ -15,6 +15,7 @@ export function Login() {
   const [loading, setLoading] = useState(true);
   const [loginLoading, setLoginLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [agreed, setAgreed] = useState(false);
 
   // Redirect if already authenticated
   useEffect(() => {
@@ -32,11 +33,7 @@ export function Login() {
       const refreshToken = params.get('refresh_token');
       
       if (accessToken && refreshToken) {
-        // Clear the hash
         window.history.replaceState(null, '', window.location.pathname);
-        
-        // TODO: Get user info and complete login
-        // For now, just save tokens and redirect
         localStorage.setItem('access_token', accessToken);
         localStorage.setItem('refresh_token', refreshToken);
         navigate('/');
@@ -67,6 +64,10 @@ export function Login() {
   }, []);
 
   const handleDevLogin = async (userId: string) => {
+    if (!agreed) {
+        setError('请先阅读并同意服务条款及隐私政策');
+        return;
+    }
     setLoginLoading(true);
     setError(null);
 
@@ -83,163 +84,127 @@ export function Login() {
   };
 
   const handleOAuthLogin = () => {
-    // Redirect to OAuth endpoint - 使用相对路径
+    if (!agreed) return;
     const apiBase = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:8080/api' : '/api');
     window.location.href = `${apiBase}/auth/oauth/linuxdo`;
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 flex flex-col items-center justify-center">
-        <div className="relative">
-          <div className="absolute inset-0 bg-white/20 rounded-full blur-2xl"></div>
-          <div className="relative">
-            <div className="w-16 h-16 border-4 border-white/30 border-t-white rounded-full animate-spin"></div>
-          </div>
-        </div>
-        <p className="text-white text-xl font-semibold mt-6 tracking-wide">正在加载...</p>
-        <div className="flex gap-2 mt-3">
-          <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '0s' }}></div>
-          <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-          <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
-        </div>
+      <div className="min-h-screen bg-[#F8F9FC] flex flex-col items-center justify-center">
+        <div className="w-8 h-8 border-4 border-[#5e5ce6]/30 border-t-[#5e5ce6] rounded-full animate-spin"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 flex items-center justify-center p-6">
-      <div className="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl p-8 sm:p-12 max-w-md w-full border border-white/20 animate-in fade-in slide-in-from-bottom-4 duration-500">
-        {/* Logo */}
-        <div className="flex justify-center mb-8">
-          <div className="relative">
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full blur-2xl opacity-60 animate-pulse"></div>
-            <div className="relative bg-white p-4 rounded-full shadow-2xl ring-4 ring-white/50">
-              <span className="text-5xl">🎰</span>
-            </div>
-          </div>
+    <div className="min-h-screen w-full flex flex-col items-center justify-center relative overflow-hidden bg-[#F8F9FC]">
+      {/* Abstract Background Effects */}
+      <div className="absolute inset-0 pointer-events-none">
+         <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-blue-100/40 rounded-full blur-[120px]" />
+         <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] bg-purple-100/40 rounded-full blur-[120px]" />
+         <div className="absolute top-[40%] left-[50%] -translate-x-1/2 -translate-y-1/2 w-[80%] h-[80%] bg-white/60 blur-[100px] rotate-45" />
+      </div>
+
+      <div className="relative z-10 w-full max-w-md px-6 flex flex-col items-center">
+        
+        {/* Title Section */}
+        <div className="text-center mb-12">
+          <h1 className="text-4xl font-bold tracking-tight mb-2 text-slate-900 flex items-center justify-center gap-2">
+            <span>LINUX DO</span>
+            <span className="font-serif italic text-[#6B69F6]">Credit</span>
+          </h1>
+          <p className="text-slate-500 text-sm">简单、安全，专为社区设计</p>
         </div>
 
-        {/* 标题 */}
-        <h1 className="text-3xl font-bold text-center bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-3">
-          刮刮乐彩票
-        </h1>
-        <p className="text-center text-slate-600 mb-8 text-sm">
-          🎫 体验真实的刮彩票乐趣
-        </p>
-
-        {/* 错误提示 */}
+        {/* Error Message */}
         {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-600 rounded-xl text-sm flex items-center gap-2">
-            <AlertCircle className="w-5 h-5 shrink-0" />
+          <div className="mb-6 p-3 bg-red-50/80 backdrop-blur text-red-600 rounded-lg text-sm flex items-center gap-2 border border-red-100 animate-in fade-in slide-in-from-top-2">
+            <AlertCircle className="w-4 h-4 shrink-0" />
             <span>{error}</span>
           </div>
         )}
 
-        {mode === 'dev' ? (
-          <div className="space-y-6">
-            {/* 开发模式用户列表 */}
-            <div className="space-y-3">
+        <div className="w-full space-y-6">
+          {mode === 'dev' ? (
+            <div className="space-y-4">
+              <div className="text-xs font-medium text-slate-400 uppercase tracking-wider text-center mb-4">开发环境测试账号</div>
               {devUsers.map((user) => (
                 <button
                   key={user.id}
                   onClick={() => handleDevLogin(user.id)}
                   disabled={loginLoading}
                   className={cn(
-                    "w-full flex items-center gap-4 p-4 rounded-xl border-2 border-slate-200 hover:border-blue-400 hover:bg-blue-50/50 transition-all duration-200 text-left group",
-                    loginLoading && "opacity-50 cursor-not-allowed"
+                    "w-full flex items-center gap-4 p-3 rounded-xl border border-slate-200 bg-white/50 hover:bg-white hover:border-[#6B69F6]/50 hover:shadow-md transition-all duration-200 text-left group",
+                    loginLoading && "opacity-50 cursor-not-allowed",
+                    !agreed && "opacity-70"
                   )}
                 >
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shrink-0 shadow-lg">
-                    {user.avatar ? (
-                      <img src={user.avatar} alt={user.username} className="w-12 h-12 rounded-full" />
-                    ) : (
-                      <span className="text-2xl">{user.role === 'admin' ? '👑' : '👤'}</span>
-                    )}
+                  <div className="w-10 h-10 rounded-full bg-[#F0F0FF] text-[#6B69F6] flex items-center justify-center shrink-0 font-medium">
+                    {user.username.substring(0, 1).toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="font-semibold text-slate-800 truncate">{user.username}</div>
-                    <div className="flex items-center gap-2 mt-1">
-                      <Badge variant={user.role === 'admin' ? "default" : "secondary"} className="text-[10px] px-2 py-0.5">
-                        {user.role === 'admin' ? <Crown className="w-3 h-3 mr-1" /> : <User className="w-3 h-3 mr-1" />}
+                    <div className="font-medium text-slate-900">{user.username}</div>
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-slate-200 text-slate-500 font-normal">
                         {user.role === 'admin' ? '管理员' : '用户'}
                       </Badge>
-                      <span className="text-xs text-slate-500">ID: {user.id}</span>
                     </div>
                   </div>
-                  <ChevronRight className="w-5 h-5 text-slate-400 group-hover:text-blue-500 group-hover:translate-x-1 transition-all" />
+                  <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-[#6B69F6] transition-colors" />
                 </button>
               ))}
+              
+               <div className="relative py-4">
+                  <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-slate-200" /></div>
+                  <div className="relative flex justify-center text-xs uppercase"><span className="bg-[#F8F9FC] px-2 text-slate-400">Or</span></div>
+               </div>
             </div>
+          ) : null}
 
-            {/* 分隔线 */}
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-slate-200" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-white px-3 text-slate-500">或者</span>
-              </div>
-            </div>
+          {/* Main Login Button */}
+          <button
+            onClick={handleOAuthLogin}
+            disabled={loginLoading || !agreed}
+            className={cn(
+              "group w-full h-12 bg-[#5e5ce6] text-white rounded-full font-medium shadow-lg shadow-[#5e5ce6]/25 hover:shadow-[#5e5ce6]/40 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300 flex items-center justify-center gap-2",
+              (!agreed || loginLoading) && "opacity-50 cursor-not-allowed shadow-none hover:translate-y-0 hover:shadow-none bg-slate-400"
+            )}
+          >
+            {loginLoading ? (
+              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+            ) : (
+              <>
+                <ExternalLink className="w-4 h-4" />
+                <span>使用 LINUX DO 登录</span>
+              </>
+            )}
+          </button>
 
-            {/* OAuth 登录按钮 */}
+          {/* Agreement Checkbox */}
+          <div className="flex items-center justify-center gap-2 mt-6">
             <button
-              onClick={handleOAuthLogin}
-              disabled={loginLoading}
-              className="group relative w-full bg-gradient-to-r from-slate-700 to-slate-800 text-white py-4 px-6 rounded-xl font-semibold overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:shadow-xl active:scale-[0.98]"
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-slate-800 to-slate-900 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              <div className="relative flex items-center justify-center gap-3">
-                <img 
-                  src="https://linux.do/uploads/default/original/4X/c/c/d/ccd8c210609d498cbeb3d5201d4c259348447562.png" 
-                  alt="Linux Do" 
-                  className="w-6 h-6"
-                />
-                <span>使用 Linux.do 登录</span>
-              </div>
-            </button>
-          </div>
-        ) : (
-          <div className="space-y-6">
-            {/* 生产模式 - Linux.do OAuth 登录按钮 */}
-            <button
-              onClick={handleOAuthLogin}
-              disabled={loginLoading}
-              className="group relative w-full bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 text-white py-4 px-6 rounded-xl font-semibold overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-700 via-purple-700 to-pink-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              <div className="relative flex items-center justify-center gap-3">
-                {loginLoading ? (
-                  <>
-                    <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                    <span className="text-lg">登录中...</span>
-                  </>
-                ) : (
-                  <>
-                    <img 
-                      src="https://linux.do/uploads/default/original/4X/c/c/d/ccd8c210609d498cbeb3d5201d4c259348447562.png" 
-                      alt="Linux Do" 
-                      className="w-6 h-6"
-                    />
-                    <span className="text-lg">使用 Linux Do 账户登录</span>
-                    <ChevronRight className="w-5 h-5 transform group-hover:translate-x-1 transition-transform duration-300" />
-                  </>
+                onClick={() => setAgreed(!agreed)}
+                className={cn(
+                    "w-4 h-4 rounded border flex items-center justify-center transition-colors",
+                    agreed ? "bg-[#5e5ce6] border-[#5e5ce6]" : "bg-transparent border-slate-300 hover:border-[#5e5ce6]"
                 )}
-              </div>
+            >
+                {agreed && <Check className="w-3 h-3 text-white" strokeWidth={3} />}
             </button>
+            <label className="text-sm text-slate-500 cursor-pointer select-none" onClick={() => setAgreed(!agreed)}>
+              我已阅读并同意
+              <a href="#" className="text-slate-600 hover:text-[#5e5ce6] mx-1 border-b border-slate-300 hover:border-[#5e5ce6] transition-colors pb-0.5">服务条款</a>
+              及
+              <a href="#" className="text-slate-600 hover:text-[#5e5ce6] mx-1 border-b border-slate-300 hover:border-[#5e5ce6] transition-colors pb-0.5">隐私政策</a>
+            </label>
           </div>
-        )}
-
-        {/* 安全提示 */}
-        <div className="mt-8 flex items-center justify-center gap-2 text-xs text-slate-500">
-          <Lock className="w-4 h-4" />
-          <span>安全登录，保护您的隐私</span>
         </div>
+      </div>
 
-        {/* 服务条款 */}
-        <p className="text-xs text-slate-400 text-center mt-4">
-          登录即表示您同意我们的服务条款和隐私政策
-        </p>
+      {/* Footer */}
+      <div className="absolute bottom-6 w-full text-center">
+        <p className="text-xs text-slate-400">© 2025 LINUX DO Credit. 版权所有</p>
       </div>
     </div>
   );
