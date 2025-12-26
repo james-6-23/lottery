@@ -477,7 +477,7 @@ func (s *LotteryService) toLotteryTypeDetailResponse(lt *model.LotteryType) *Lot
 	// Parse rules config
 	var rulesConfig interface{}
 	if lt.RulesConfig != "" {
-		json.Unmarshal([]byte(lt.RulesConfig), &rulesConfig)
+		_ = json.Unmarshal([]byte(lt.RulesConfig), &rulesConfig)
 	}
 
 	// Parse win symbols from rules config
@@ -795,14 +795,20 @@ func (s *LotteryService) DeterminePrizeResultForPatternLottery(prizePoolID uint,
 	// Generate areas with random patterns and points
 	for i := 0; i < patternConfig.AreaCount; i++ {
 		// Random point value
-		pointIdx, _ := rand.Int(rand.Reader, big.NewInt(int64(len(defaultPoints))))
+		pointIdx, err := rand.Int(rand.Reader, big.NewInt(int64(len(defaultPoints))))
+		if err != nil {
+			return nil, err
+		}
 		points := defaultPoints[pointIdx.Int64()]
 		patternContent.TotalPoints += points
 
 		// Random pattern
 		patternID := ""
 		if len(patternConfig.Patterns) > 0 {
-			patternIdx, _ := rand.Int(rand.Reader, big.NewInt(int64(len(patternConfig.Patterns))))
+			patternIdx, err := rand.Int(rand.Reader, big.NewInt(int64(len(patternConfig.Patterns))))
+			if err != nil {
+				return nil, err
+			}
 			patternID = patternConfig.Patterns[patternIdx.Int64()].ID
 		}
 
@@ -819,24 +825,39 @@ func (s *LotteryService) DeterminePrizeResultForPatternLottery(prizePoolID uint,
 	if baseContent.PrizeLevel > 0 && baseContent.PrizeAmount > 0 {
 		useSpecial := false
 		if len(patternConfig.SpecialPatterns) > 0 {
-			specialChance, _ := rand.Int(rand.Reader, big.NewInt(100))
+			specialChance, err := rand.Int(rand.Reader, big.NewInt(100))
+			if err != nil {
+				return nil, err
+			}
 			useSpecial = specialChance.Int64() < 20
 		}
 
 		if useSpecial && len(patternConfig.SpecialPatterns) > 0 {
 			// Place special pattern - gives total sum
-			specialIdx, _ := rand.Int(rand.Reader, big.NewInt(int64(len(patternConfig.SpecialPatterns))))
+			specialIdx, err := rand.Int(rand.Reader, big.NewInt(int64(len(patternConfig.SpecialPatterns))))
+			if err != nil {
+				return nil, err
+			}
 			specialPattern := patternConfig.SpecialPatterns[specialIdx.Int64()]
-			areaIdx, _ := rand.Int(rand.Reader, big.NewInt(int64(patternConfig.AreaCount)))
+			areaIdx, err := rand.Int(rand.Reader, big.NewInt(int64(patternConfig.AreaCount)))
+			if err != nil {
+				return nil, err
+			}
 			patternContent.Areas[areaIdx.Int64()].PatternID = specialPattern.ID
 			patternContent.Areas[areaIdx.Int64()].IsSpecial = true
 			patternContent.SpecialPatternID = specialPattern.ID
 			patternContent.PrizeAmount = patternContent.TotalPoints
 		} else if len(patternConfig.Patterns) > 0 {
 			// Place winning pattern
-			winPatternIdx, _ := rand.Int(rand.Reader, big.NewInt(int64(len(patternConfig.Patterns))))
+			winPatternIdx, err := rand.Int(rand.Reader, big.NewInt(int64(len(patternConfig.Patterns))))
+			if err != nil {
+				return nil, err
+			}
 			winPattern := patternConfig.Patterns[winPatternIdx.Int64()]
-			areaIdx, _ := rand.Int(rand.Reader, big.NewInt(int64(patternConfig.AreaCount)))
+			areaIdx, err := rand.Int(rand.Reader, big.NewInt(int64(patternConfig.AreaCount)))
+			if err != nil {
+				return nil, err
+			}
 			patternContent.Areas[areaIdx.Int64()].PatternID = winPattern.ID
 			patternContent.Areas[areaIdx.Int64()].IsWin = true
 			patternContent.WinPatternID = winPattern.ID

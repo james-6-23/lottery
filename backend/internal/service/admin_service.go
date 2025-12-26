@@ -620,7 +620,7 @@ func (s *AdminService) GetAdminLogs(query AdminLogQuery) (*AdminLogListResponse,
 	for i, log := range logs {
 		var details interface{}
 		if log.Details != "" {
-			json.Unmarshal([]byte(log.Details), &details)
+			_ = json.Unmarshal([]byte(log.Details), &details)
 		}
 		responses[i] = AdminLogResponse{
 			ID:         log.ID,

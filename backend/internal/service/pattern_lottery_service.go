@@ -146,17 +146,26 @@ func (s *PatternLotteryService) GeneratePatternTicketContent(config *PatternConf
 		useSpecial := false
 		if len(config.SpecialPatterns) > 0 {
 			// 20% chance of special pattern win
-			specialChance, _ := rand.Int(rand.Reader, big.NewInt(100))
+			specialChance, err := rand.Int(rand.Reader, big.NewInt(100))
+			if err != nil {
+				return nil, err
+			}
 			useSpecial = specialChance.Int64() < 20
 		}
 
 		if useSpecial {
 			// Place special pattern in a random area
 			// Requirements: 5.1.5 - Special pattern gives total sum of all areas
-			specialIdx, _ := rand.Int(rand.Reader, big.NewInt(int64(len(config.SpecialPatterns))))
+			specialIdx, err := rand.Int(rand.Reader, big.NewInt(int64(len(config.SpecialPatterns))))
+			if err != nil {
+				return nil, err
+			}
 			specialPattern := config.SpecialPatterns[specialIdx.Int64()]
 
-			areaIdx, _ := rand.Int(rand.Reader, big.NewInt(int64(config.AreaCount)))
+			areaIdx, err := rand.Int(rand.Reader, big.NewInt(int64(config.AreaCount)))
+			if err != nil {
+				return nil, err
+			}
 			content.Areas[areaIdx.Int64()].PatternID = specialPattern.ID
 			content.Areas[areaIdx.Int64()].IsSpecial = true
 			content.SpecialPatternID = specialPattern.ID
@@ -164,10 +173,16 @@ func (s *PatternLotteryService) GeneratePatternTicketContent(config *PatternConf
 		} else if len(config.Patterns) > 0 {
 			// Place winning pattern in a random area
 			// Requirements: 5.1.4 - Regular winning pattern gives pattern's prize points
-			winPatternIdx, _ := rand.Int(rand.Reader, big.NewInt(int64(len(config.Patterns))))
+			winPatternIdx, err := rand.Int(rand.Reader, big.NewInt(int64(len(config.Patterns))))
+			if err != nil {
+				return nil, err
+			}
 			winPattern := config.Patterns[winPatternIdx.Int64()]
 
-			areaIdx, _ := rand.Int(rand.Reader, big.NewInt(int64(config.AreaCount)))
+			areaIdx, err := rand.Int(rand.Reader, big.NewInt(int64(config.AreaCount)))
+			if err != nil {
+				return nil, err
+			}
 			content.Areas[areaIdx.Int64()].PatternID = winPattern.ID
 			content.Areas[areaIdx.Int64()].IsWin = true
 			content.WinPatternID = winPattern.ID
