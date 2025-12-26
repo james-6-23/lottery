@@ -1,0 +1,30 @@
+# ============================================
+# CI Dockerfile - Uses pre-built artifacts
+# Super fast: no build stages, just packaging
+# ============================================
+FROM alpine:3.19
+
+# Install runtime dependencies
+RUN apk --no-cache add ca-certificates tzdata nginx supervisor
+
+WORKDIR /app
+
+# Copy pre-built backend binary
+COPY backend/server ./server
+
+# Copy pre-built frontend
+COPY frontend/dist /usr/share/nginx/html
+
+# Copy configs
+COPY nginx.conf /etc/nginx/http.d/default.conf
+COPY supervisord.conf /etc/supervisord.conf
+
+# Create data directory
+RUN mkdir -p /app/data
+
+EXPOSE 5678
+
+HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
+    CMD wget --no-verbose --tries=1 --spider http://localhost:5678/health || exit 1
+
+CMD ["supervisord", "-c", "/etc/supervisord.conf"]

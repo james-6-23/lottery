@@ -98,7 +98,7 @@ export function AdminLogs() {
     });
   };
 
-  const getActionColor = (action: string) => {
+  const getActionColor = (action: string): "default" | "secondary" | "destructive" | "outline" => {
     if (action.includes('delete')) return 'destructive';
     if (action.includes('create')) return 'default'; // Map to default (primary) or specific green style via className
     if (action.includes('update') || action.includes('adjust')) return 'secondary';
@@ -187,8 +187,8 @@ export function AdminLogs() {
                       {log.admin_name || `管理员 #${log.admin_id}`}
                     </td>
                     <td className="p-4 align-middle">
-                      <Badge 
-                        variant={getActionColor(log.action) as any} 
+                      <Badge
+                        variant={getActionColor(log.action)}
                         className={cn(getActionClassName(log.action))}
                       >
                         {getActionLabel(log.action)}
@@ -265,8 +265,8 @@ export function AdminLogs() {
                 </div>
                 <div>
                   <span className="text-muted-foreground block mb-1">操作</span>
-                  <Badge 
-                    variant={getActionColor(selectedLog.action) as any}
+                  <Badge
+                    variant={getActionColor(selectedLog.action)}
                     className={cn(getActionClassName(selectedLog.action))}
                   >
                     {getActionLabel(selectedLog.action)}

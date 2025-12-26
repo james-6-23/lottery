@@ -1,21 +1,44 @@
-import { useEffect } from 'react';
+import { useEffect, useCallback } from 'react';
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { 
-  LogOut, 
-  User, 
-  Wallet, 
-  ShieldCheck, 
-  ShoppingBag, 
-  Ticket, 
+import {
+  LogOut,
+  User,
+  Wallet,
+  ShieldCheck,
+  ShoppingBag,
+  Ticket,
   LayoutDashboard,
   Menu,
   X
 } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
+
+interface NavLinkProps {
+  to: string;
+  children: React.ReactNode;
+  icon?: React.ElementType;
+  currentPath: string;
+  onClick?: () => void;
+}
+
+function NavLink({ to, children, icon: Icon, currentPath, onClick }: NavLinkProps) {
+  const isActive = currentPath === to;
+  return (
+    <Link to={to} onClick={onClick}>
+      <Button
+        variant={isActive ? "secondary" : "ghost"}
+        className={cn("w-full justify-start md:w-auto md:justify-center gap-2", isActive && "bg-secondary")}
+      >
+        {Icon && <Icon className="h-4 w-4" />}
+        {children}
+      </Button>
+    </Link>
+  );
+}
 
 export function Layout() {
   const navigate = useNavigate();
@@ -27,29 +50,14 @@ export function Layout() {
     checkAuth();
   }, [checkAuth]);
 
-  useEffect(() => {
-    setIsMobileMenuOpen(false);
-  }, [location.pathname]);
-
   const handleLogout = async () => {
     await logout();
     navigate('/login');
   };
 
-  const NavLink = ({ to, children, icon: Icon }: { to: string; children: React.ReactNode; icon?: React.ElementType }) => {
-    const isActive = location.pathname === to;
-    return (
-      <Link to={to}>
-        <Button 
-          variant={isActive ? "secondary" : "ghost"} 
-          className={cn("w-full justify-start md:w-auto md:justify-center gap-2", isActive && "bg-secondary")}
-        >
-          {Icon && <Icon className="h-4 w-4" />}
-          {children}
-        </Button>
-      </Link>
-    );
-  };
+  const closeMobileMenu = useCallback(() => {
+    setIsMobileMenuOpen(false);
+  }, []);
 
   if (isLoading) {
     return (
@@ -75,9 +83,9 @@ export function Layout() {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-1">
-            <NavLink to="/lottery" icon={Ticket}>彩票大厅</NavLink>
-            <NavLink to="/exchange" icon={ShoppingBag}>兑换商城</NavLink>
-            <NavLink to="/verify" icon={ShieldCheck}>保安码验证</NavLink>
+            <NavLink to="/lottery" icon={Ticket} currentPath={location.pathname}>彩票大厅</NavLink>
+            <NavLink to="/exchange" icon={ShoppingBag} currentPath={location.pathname}>兑换商城</NavLink>
+            <NavLink to="/verify" icon={ShieldCheck} currentPath={location.pathname}>保安码验证</NavLink>
           </nav>
 
           <div className="flex items-center gap-2 ml-auto">
@@ -146,11 +154,11 @@ export function Layout() {
         {isMobileMenuOpen && (
           <div className="md:hidden border-t p-4 space-y-4 bg-background">
             <nav className="flex flex-col gap-2">
-              <NavLink to="/lottery" icon={Ticket}>彩票大厅</NavLink>
-              <NavLink to="/exchange" icon={ShoppingBag}>兑换商城</NavLink>
-              <NavLink to="/verify" icon={ShieldCheck}>保安码验证</NavLink>
-              <NavLink to="/wallet" icon={Wallet}>我的钱包</NavLink>
-              <NavLink to="/profile" icon={User}>个人中心</NavLink>
+              <NavLink to="/lottery" icon={Ticket} currentPath={location.pathname} onClick={closeMobileMenu}>彩票大厅</NavLink>
+              <NavLink to="/exchange" icon={ShoppingBag} currentPath={location.pathname} onClick={closeMobileMenu}>兑换商城</NavLink>
+              <NavLink to="/verify" icon={ShieldCheck} currentPath={location.pathname} onClick={closeMobileMenu}>保安码验证</NavLink>
+              <NavLink to="/wallet" icon={Wallet} currentPath={location.pathname} onClick={closeMobileMenu}>我的钱包</NavLink>
+              <NavLink to="/profile" icon={User} currentPath={location.pathname} onClick={closeMobileMenu}>个人中心</NavLink>
             </nav>
             
             {isAuthenticated && user ? (
